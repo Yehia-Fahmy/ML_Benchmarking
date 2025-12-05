@@ -1,0 +1,69 @@
+{
+  "model": "Tongyi-MAI/Z-Image-Turbo",
+  "device": "cuda",
+  "timestamp": "2025-12-04T23:44:39.686917",
+  "config": {
+    "height": 1024,
+    "width": 1024,
+    "num_inference_steps": 9,
+    "guidance_scale": 0.0,
+    "dtype": "torch.bfloat16",
+    "model_compilation": false
+  },
+  "system_info": {
+    "cpu_count": 12,
+    "total_ram_gb": 15.581253051757812,
+    "pytorch_version": "2.9.1+cu128",
+    "gpu_name": "NVIDIA GeForce RTX 3070 Ti",
+    "gpu_memory_gb": 7.9993896484375
+  },
+  "warmup": {
+    "time_seconds": 689.6687808036804
+  },
+  "generations": [
+    {
+      "index": 1,
+      "prompt": "Young Chinese woman in red Hanfu, intricate embroidery. Impeccable makeup, red floral forehead pattern. Elaborate high bun, golden phoenix headdress, red flowers, beads. Holds round folding fan with lady, trees, bird. Neon lightning-bolt lamp (\u26a1\ufe0f), bright yellow glow, above extended left palm. Soft-lit outdoor night background, silhouetted tiered pagoda (\u897f\u5b89\u5927\u96c1\u5854), blurred colorful distant lights.",
+      "filename": "image_001_20251205_000734.png",
+      "inference_time_seconds": 684.7379379272461,
+      "images_per_second": 0.0014604127281556448,
+      "cpu_memory_mb": 0.25,
+      "peak_cpu_memory_mb": 4530.38671875,
+      "gpu_memory_mb": 0.0,
+      "peak_gpu_memory_mb": 19752.60009765625
+    },
+    {
+      "index": 2,
+      "prompt": "A serene mountain landscape at sunset, with golden light reflecting off a crystal clear lake, surrounded by pine trees and snow-capped peaks in the distance.",
+      "filename": "image_002_20251205_001904.png",
+      "inference_time_seconds": 689.3254444599152,
+      "images_per_second": 0.0014506935846296774,
+      "cpu_memory_mb": 8.125,
+      "peak_cpu_memory_mb": 4547.88671875,
+      "gpu_memory_mb": 0.0,
+      "peak_gpu_memory_mb": 19752.60009765625,
+      "gpu_utilization_percent": 100.0
+    },
+    {
+      "index": 3,
+      "prompt": "A futuristic cityscape at night with neon lights, flying vehicles, and holographic advertisements in a cyberpunk style.",
+      "filename": "image_003_20251205_003036.png",
+      "inference_time_seconds": 692.197099685669,
+      "images_per_second": 0.001444675223941427,
+      "cpu_memory_mb": 0.0,
+      "peak_cpu_memory_mb": 4547.88671875,
+      "gpu_memory_mb": 0.0,
+      "peak_gpu_memory_mb": 19752.60009765625,
+      "gpu_utilization_percent": 100.0
+    }
+  ],
+  "summary": {
+    "total_images": 3,
+    "total_time_seconds": 2066.26048207283,
+    "mean_time_seconds": 688.7534940242767,
+    "min_time_seconds": 684.7379379272461,
+    "max_time_seconds": 692.197099685669,
+    "mean_images_per_second": 0.0014518982606638547,
+    "std_time_seconds": 3.0719287112170766
+  }
+}

@@ -1,0 +1,25 @@
+# Z-Image-Turbo Inference Requirements
+
+# Core Dependencies
+# Install diffusers from source for Z-Image support
+git+https://github.com/huggingface/diffusers
+
+# PyTorch and Vision
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Model Dependencies
+transformers>=4.30.0
+accelerate>=0.20.0
+safetensors>=0.3.0
+
+# Performance Monitoring
+psutil>=5.9.0
+
+# Optional: NVIDIA GPU monitoring (will be imported conditionally)
+# Uncomment if you have NVIDIA GPU and want detailed GPU metrics
+# gputil>=1.4.0
+
+# Image Processing
+Pillow>=9.0.0
+
