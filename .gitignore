@@ -12,6 +12,7 @@ ENV/
 # Output files
 outputs/
 benchmark_results.json
+assets
 
 # Model cache
 .cache/
