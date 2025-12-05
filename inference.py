@@ -56,7 +56,7 @@ IMAGE_HEIGHT = 1024
 IMAGE_WIDTH = 1024
 NUM_INFERENCE_STEPS = 9  # Results in 8 DiT forwards for Turbo model
 GUIDANCE_SCALE = 0.0  # Should be 0 for Turbo models
-SEED = 42  # Set to None for random generation
+SEED = None  # Set to None for random generation
 
 # Model Settings
 MODEL_ID = "Tongyi-MAI/Z-Image-Turbo"
@@ -147,21 +147,43 @@ def load_model(device: str, dtype: torch.dtype):
     
     start_time = time.time()
     
-    # Load pipeline
+    # Load pipeline with efficient memory settings
     pipe = ZImagePipeline.from_pretrained(
         MODEL_ID,
-        torch_dtype=dtype,
-        low_cpu_mem_usage=False,
+        dtype=dtype,
+        low_cpu_mem_usage=True,  # Changed to True for better memory efficiency
     )
     pipe.to(device)
     
-    # Optional: Enable Flash Attention for better efficiency (if supported)
+    # Enable memory-efficient features
     if device == "cuda":
+        # Enable Flash Attention for better efficiency (if supported)
         try:
             pipe.transformer.set_attention_backend("flash")
             print("✓ Flash Attention enabled")
         except Exception as e:
             print(f"⚠ Flash Attention not available: {e}")
+        
+        # Enable memory-efficient attention (sliced attention)
+        try:
+            pipe.enable_attention_slicing(slice_size="auto")
+            print("✓ Attention slicing enabled")
+        except Exception as e:
+            print(f"⚠ Attention slicing not available: {e}")
+        
+        # Enable VAE slicing to reduce memory usage during decoding
+        try:
+            pipe.enable_vae_slicing()
+            print("✓ VAE slicing enabled")
+        except Exception as e:
+            print(f"⚠ VAE slicing not available: {e}")
+        
+        # Enable VAE tiling for large images to reduce memory
+        try:
+            pipe.enable_vae_tiling()
+            print("✓ VAE tiling enabled")
+        except Exception as e:
+            print(f"⚠ VAE tiling not available: {e}")
     
     # Optional: Model compilation
     if USE_MODEL_COMPILATION:
@@ -212,7 +234,6 @@ def run_inference_with_benchmark(
             "total_ram_gb": psutil.virtual_memory().total / (1024**3),
             "pytorch_version": torch.__version__,
         },
-        "warmup": {},
         "generations": [],
         "summary": {},
     }
@@ -221,34 +242,6 @@ def run_inference_with_benchmark(
     if device == "cuda":
         results["system_info"]["gpu_name"] = torch.cuda.get_device_name(0)
         results["system_info"]["gpu_memory_gb"] = torch.cuda.get_device_properties(0).total_memory / (1024**3)
-    
-    print("=" * 70)
-    print("WARMUP RUN")
-    print("=" * 70)
-    print("Running warmup to account for compilation overhead...")
-    
-    # Warmup run
-    warmup_start = time.time()
-    generator = torch.Generator(device).manual_seed(SEED) if SEED is not None else None
-    
-    _ = pipe(
-        prompt=prompts[0],
-        height=IMAGE_HEIGHT,
-        width=IMAGE_WIDTH,
-        num_inference_steps=NUM_INFERENCE_STEPS,
-        guidance_scale=GUIDANCE_SCALE,
-        generator=generator,
-    ).images[0]
-    
-    warmup_time = time.time() - warmup_start
-    results["warmup"]["time_seconds"] = warmup_time
-    print(f"✓ Warmup completed in {warmup_time:.2f}s")
-    print("=" * 70)
-    print()
-    
-    # Clear cache after warmup
-    if device == "cuda":
-        torch.cuda.empty_cache()
     
     # Main inference loop with benchmarking
     print("=" * 70)
@@ -259,25 +252,40 @@ def run_inference_with_benchmark(
         print(f"\n[{idx}/{len(prompts)}] Generating image...")
         print(f"Prompt: {prompt[:80]}{'...' if len(prompt) > 80 else ''}")
         
+        # Clear GPU cache before each generation to prevent fragmentation
+        if device == "cuda":
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+        
         # Track memory before generation
         process = psutil.Process()
         mem_before = process.memory_info().rss / (1024**2)
         gpu_mem_before = get_gpu_memory_usage(device)
         
-        # Generate image with timing
+        # Generate image with timing and gradient-free inference
         start_time = time.time()
-        generator = torch.Generator(device).manual_seed(SEED + idx if SEED is not None else None)
         
-        image = pipe(
-            prompt=prompt,
-            height=IMAGE_HEIGHT,
-            width=IMAGE_WIDTH,
-            num_inference_steps=NUM_INFERENCE_STEPS,
-            guidance_scale=GUIDANCE_SCALE,
-            generator=generator,
-        ).images[0]
+        # Only create and seed generator if SEED is provided
+        if SEED is not None:
+            generator = torch.Generator(device).manual_seed(SEED + idx)
+        else:
+            generator = None  # Random seed will be used
+        
+        with torch.no_grad():  # Disable gradient tracking for inference
+            image = pipe(
+                prompt=prompt,
+                height=IMAGE_HEIGHT,
+                width=IMAGE_WIDTH,
+                num_inference_steps=NUM_INFERENCE_STEPS,
+                guidance_scale=GUIDANCE_SCALE,
+                generator=generator,
+            ).images[0]
         
         inference_time = time.time() - start_time
+        
+        # Synchronize GPU to get accurate memory readings
+        if device == "cuda":
+            torch.cuda.synchronize()
         
         # Track memory after generation
         mem_after = process.memory_info().rss / (1024**2)
@@ -363,7 +371,6 @@ def print_summary(results: Dict):
     print(f"\nPerformance:")
     print(f"  Total Images: {summary['total_images']}")
     print(f"  Total Time: {summary['total_time_seconds']:.2f}s")
-    print(f"  Warmup Time: {results['warmup']['time_seconds']:.2f}s")
     print(f"  Mean Time: {summary['mean_time_seconds']:.2f}s ± {summary['std_time_seconds']:.2f}s")
     print(f"  Min Time: {summary['min_time_seconds']:.2f}s")
     print(f"  Max Time: {summary['max_time_seconds']:.2f}s")
@@ -410,7 +417,6 @@ def update_readme_with_results(results: Dict):
 - Total Images Generated: {summary['total_images']}
 - Mean Inference Time: {summary['mean_time_seconds']:.2f}s ± {summary['std_time_seconds']:.2f}s
 - Throughput: {summary['mean_images_per_second']:.2f} images/second
-- Warmup Time: {results['warmup']['time_seconds']:.2f}s
 """
     
     if results["device"] == "cuda" and "peak_gpu_memory_mb" in results["generations"][0]:
