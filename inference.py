@@ -20,9 +20,35 @@ from PIL import Image
 # ============================================================================
 
 PROMPTS = [
+    # Original prompts
     "Young Chinese woman in red Hanfu, intricate embroidery. Impeccable makeup, red floral forehead pattern. Elaborate high bun, golden phoenix headdress, red flowers, beads. Holds round folding fan with lady, trees, bird. Neon lightning-bolt lamp (⚡️), bright yellow glow, above extended left palm. Soft-lit outdoor night background, silhouetted tiered pagoda (西安大雁塔), blurred colorful distant lights.",
     "A serene mountain landscape at sunset, with golden light reflecting off a crystal clear lake, surrounded by pine trees and snow-capped peaks in the distance.",
     "A futuristic cityscape at night with neon lights, flying vehicles, and holographic advertisements in a cyberpunk style.",
+    
+    # Challenging new prompts
+    # Test 1: Bilingual text rendering with complex scene
+    "A vintage coffee shop storefront with a neon sign reading 'OPEN 24/7' in red letters above the door, and a wooden chalkboard menu displaying '咖啡 $3.50' in white chalk. Rain-slicked cobblestone street, warm golden light spilling through foggy windows, early morning blue hour atmosphere.",
+    
+    # Test 2: Complex lighting and reflections
+    "A crystal wine glass filled with red wine, sitting on a marble countertop. Dramatic side lighting creates caustics and reflections on the surface. A single rose petal floats in the wine. Shallow depth of field, photorealistic macro photography style, with bokeh lights in the dark background.",
+    
+    # Test 3: Action and motion with particles
+    "A professional dancer mid-leap in an abandoned warehouse, arms extended gracefully. Flour powder explodes around her body, frozen in mid-air, creating dramatic white clouds. Harsh sunlight streams through broken windows, creating god rays through the dust. High-speed photography, every particle visible and sharp.",
+    
+    # Test 4: Intricate architectural detail
+    "Interior of a grand baroque cathedral, ornate golden details on every surface. Sunlight streams through massive stained glass windows, casting colored light patterns on white marble floors. Elaborate ceiling frescoes depicting celestial scenes. Ultra-wide angle perspective looking up towards the dome, emphasizing scale and grandeur.",
+    
+    # Test 5: Challenging materials and textures
+    "Extreme close-up of a water droplet suspended on a spider's web at dawn. The droplet acts as a lens, containing a perfect miniature reflection of a sunrise landscape. Morning dew covers the entire web. Macro photography with perfect focus on water surface tension, iridescent light refractions.",
+    
+    # Test 6: Complex character interaction with emotion
+    "An elderly master calligrapher teaching a young student in a traditional Japanese study room. The master's weathered hands guide the student's brush, mid-stroke on rice paper. Ink bottles, scrolls, and brushes arranged on the low table. Soft natural light from shoji screens, expressions of concentration and wisdom. Photorealistic, intimate moment captured.",
+    
+    # Test 7: Surreal but photorealistic
+    "A giant vintage pocket watch partially buried in desert sand dunes, its face showing roman numerals. The watch is overgrown with lush green vines and blooming flowers emerging from its mechanisms. Golden hour lighting, long shadows, a single bird perched on the watch crown. Hyper-realistic, surreal juxtaposition.",
+    
+    # Test 8: Environmental storytelling
+    "An abandoned astronaut helmet on the surface of Mars, half-buried in red dust. The helmet's visor reflects the pink Martian sky and distant Earth as a blue dot. Small rocks and footprints leading away into the distance. Cinematic composition, sense of isolation and mystery, photorealistic space photography aesthetic.",
 ]
 
 # Generation Parameters

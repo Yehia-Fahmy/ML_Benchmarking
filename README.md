@@ -169,13 +169,13 @@ Comparative performance across different hardware configurations (1024x1024, 9 s
 
 | Hardware | VRAM/Memory | Time per Image | Throughput | Date Tested |
 |----------|-------------|----------------|------------|-------------|
-| NVIDIA GeForce RTX 3070 Ti | 8GB | ~688.75s | 0.00145 img/s | 2025-12-04 |
+| NVIDIA GeForce RTX 3070 Ti | 8GB | ~689.38s | 0.00145 img/s | 2025-12-05 |
 
 *Note: This table will be expanded as more hardware configurations are tested. Actual performance varies based on prompt complexity and system configuration.*
 
 ## Latest Benchmark Results
 
-**Last Run:** 2025-12-04 23:44:39
+**Last Run:** 2025-12-05 09:13:36
 
 **Configuration:**
 - Model: Tongyi-MAI/Z-Image-Turbo
@@ -185,30 +185,55 @@ Comparative performance across different hardware configurations (1024x1024, 9 s
 - Dtype: torch.bfloat16
 
 **Performance Metrics:**
-- Total Images Generated: 3
-- Mean Inference Time: 688.75s ± 3.07s
-- Throughput: 0.00 images/second
-- Warmup Time: 689.67s
+- Total Images Generated: 8
+- Mean Inference Time: 689.38s ± 6.65s
+- Throughput: 0.00145 images/second
+- Warmup Time: 695.00s
 - Peak GPU Memory: 19753 MB (19.29 GB)
 
 ## Generated Examples
 
-Below are example images generated during the latest benchmark run:
+Below are example images generated during the latest benchmark run, showcasing challenging prompts that test various capabilities:
 
-### Example 1: Chinese Woman in Red Hanfu
-**Prompt:** Young Chinese woman in red Hanfu, intricate embroidery. Impeccable makeup, red floral forehead pattern. Elaborate high bun, golden phoenix headdress, red flowers, beads. Holds round folding fan with lady, trees, bird. Neon lightning-bolt lamp (⚡️), bright yellow glow, above extended left palm. Soft-lit outdoor night background, silhouetted tiered pagoda (西安大雁塔), blurred colorful distant lights.
+### Example 1: Bilingual Text Rendering - Coffee Shop
+**Prompt:** A vintage coffee shop storefront with a neon sign reading 'OPEN 24/7' in red letters above the door, and a wooden chalkboard menu displaying '咖啡 $3.50' in white chalk. Rain-slicked cobblestone street, warm golden light spilling through foggy windows, early morning blue hour atmosphere.
 
-![Image 1](outputs/image_001_20251205_000734.png)
+![Image 1](outputs/image_001_20251205_093642.png)
 
-### Example 2: Serene Mountain Landscape
-**Prompt:** A serene mountain landscape at sunset, with golden light reflecting off a crystal clear lake, surrounded by pine trees and snow-capped peaks in the distance.
+### Example 2: Complex Lighting & Reflections - Wine Glass
+**Prompt:** A crystal wine glass filled with red wine, sitting on a marble countertop. Dramatic side lighting creates caustics and reflections on the surface. A single rose petal floats in the wine. Shallow depth of field, photorealistic macro photography style, with bokeh lights in the dark background.
 
-![Image 2](outputs/image_002_20251205_001904.png)
+![Image 2](outputs/image_002_20251205_094826.png)
 
-### Example 3: Futuristic Cyberpunk Cityscape
-**Prompt:** A futuristic cityscape at night with neon lights, flying vehicles, and holographic advertisements in a cyberpunk style.
+### Example 3: Action & Motion - Dancer with Flour
+**Prompt:** A professional dancer mid-leap in an abandoned warehouse, arms extended gracefully. Flour powder explodes around her body, frozen in mid-air, creating dramatic white clouds. Harsh sunlight streams through broken windows, creating god rays through the dust. High-speed photography, every particle visible and sharp.
 
-![Image 3](outputs/image_003_20251205_003036.png)
+![Image 3](outputs/image_003_20251205_100003.png)
+
+### Example 4: Architectural Detail - Baroque Cathedral
+**Prompt:** Interior of a grand baroque cathedral, ornate golden details on every surface. Sunlight streams through massive stained glass windows, casting colored light patterns on white marble floors. Elaborate ceiling frescoes depicting celestial scenes. Ultra-wide angle perspective looking up towards the dome, emphasizing scale and grandeur.
+
+![Image 4](outputs/image_004_20251205_101128.png)
+
+### Example 5: Materials & Textures - Water Droplet Macro
+**Prompt:** Extreme close-up of a water droplet suspended on a spider's web at dawn. The droplet acts as a lens, containing a perfect miniature reflection of a sunrise landscape. Morning dew covers the entire web. Macro photography with perfect focus on water surface tension, iridescent light refractions.
+
+![Image 5](outputs/image_005_20251205_102253.png)
+
+### Example 6: Character Interaction - Japanese Calligraphy Lesson
+**Prompt:** An elderly master calligrapher teaching a young student in a traditional Japanese study room. The master's weathered hands guide the student's brush, mid-stroke on rice paper. Ink bottles, scrolls, and brushes arranged on the low table. Soft natural light from shoji screens, expressions of concentration and wisdom. Photorealistic, intimate moment captured.
+
+![Image 6](outputs/image_006_20251205_103418.png)
+
+### Example 7: Surreal Photorealism - Desert Pocket Watch
+**Prompt:** A giant vintage pocket watch partially buried in desert sand dunes, its face showing roman numerals. The watch is overgrown with lush green vines and blooming flowers emerging from its mechanisms. Golden hour lighting, long shadows, a single bird perched on the watch crown. Hyper-realistic, surreal juxtaposition.
+
+![Image 7](outputs/image_007_20251205_104543.png)
+
+### Example 8: Environmental Storytelling - Mars Astronaut Helmet
+**Prompt:** An abandoned astronaut helmet on the surface of Mars, half-buried in red dust. The helmet's visor reflects the pink Martian sky and distant Earth as a blue dot. Small rocks and footprints leading away into the distance. Cinematic composition, sense of isolation and mystery, photorealistic space photography aesthetic.
+
+![Image 8](outputs/image_008_20251205_105709.png)
 
 ## Model Information
 
