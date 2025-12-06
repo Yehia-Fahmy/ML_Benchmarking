@@ -48,7 +48,8 @@ DIFFUSERS_MODELS = ["sd-turbo", "sd-1.5", "z-image-turbo"]
 # Models that require external repos/special handling
 SPECIAL_MODELS = ["starflow-t2i"]
 
-ALL_MODELS = DIFFUSERS_MODELS + SPECIAL_MODELS
+# ALL_MODELS = DIFFUSERS_MODELS + SPECIAL_MODELS
+ALL_MODELS = DIFFUSERS_MODELS
 
 
 # ============================================================================
