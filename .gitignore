@@ -17,6 +17,7 @@ assets
 # Model cache
 .cache/
 huggingface/
+utils
 
 # IDE
 .vscode/
