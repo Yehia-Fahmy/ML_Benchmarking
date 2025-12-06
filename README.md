@@ -76,7 +76,7 @@ This will:
 1. Detect your GPU/device automatically
 2. Load each model sequentially (Z-Image-Turbo, SD-Turbo, SD 1.5)
 3. Generate 5 test images per model (15 total images)
-4. Save images to `outputs/[model-name]/`
+4. Save images to `comparison results/[model-name]/`
 5. Record performance metrics to `benchmark_results.json`
 6. Update this README with a comparison table
 
@@ -155,16 +155,16 @@ The benchmark script includes several optimizations for stable operation on 8GB 
 After running the benchmark, outputs are organized by model:
 
 ```
-outputs/
+comparison results/
 ├── z-image-turbo/
-│   ├── prompt_01_20231206_143052.png
-│   ├── prompt_02_20231206_143055.png
+│   ├── prompt_01_20251205_201729.png
+│   ├── prompt_02_20251205_202022.png
 │   └── ...
 ├── sd-turbo/
-│   ├── prompt_01_20231206_143152.png
+│   ├── prompt_01_20251205_203352.png
 │   └── ...
 └── sd-1.5/
-    ├── prompt_01_20231206_143252.png
+    ├── prompt_01_20251205_204139.png
     └── ...
 ```
 
@@ -208,117 +208,168 @@ This README is automatically updated with:
 
 ## Model Comparison Results
 
-*Run the benchmark to see comparison results here. The table will show performance metrics, memory usage, and analysis across all three models.*
+**Last Run:** 2025-12-05 20:41:51
 
-To generate results:
-```bash
-python inference.py
-```
-
-## Model Capabilities Demonstration
-
-Below are sample outputs from **Tongyi-MAI/Z-Image-Turbo**, showcasing its ability to handle diverse and challenging prompts across various genres and styles.
-
-### Test 1: Underwater Scene with Complex Lighting
-**Prompt:** *"Underwater coral reef scene with sunlight streaming from above, creating dramatic light rays through the water. Schools of tropical fish swimming between colorful corals and sea anemones. Crystal clear turquoise water with natural depth and refraction effects."*
-
-![Underwater Scene](Z-Image-Turbo-outputs-png/image_001_20251205_193437.png)
-
-### Test 2: Dynamic Weather and Atmospheric Effects
-**Prompt:** *"Storm clouds gathering over a wheat field at dusk. Lightning illuminating dark purple and grey clouds from within. Golden wheat swaying in strong wind, dramatic contrast between warm foreground and ominous sky. Wide cinematic landscape."*
-
-![Storm Scene](Z-Image-Turbo-outputs-png/image_002_20251205_193720.png)
-
-### Test 3: Abstract Architectural Photography
-**Prompt:** *"Modern minimalist architecture, geometric concrete structures with sharp angles and clean lines. Interplay of light and shadow on white surfaces. Single figure for scale walking through the space. High contrast black and white photography style."*
-
-![Architectural Photography](Z-Image-Turbo-outputs-png/image_003_20251205_193959.png)
-
-### Test 4: Natural Phenomena
-**Prompt:** *"Aurora borealis dancing over a frozen lake surrounded by snow-covered pine forest. Green and purple lights reflecting on ice surface. Stars visible in clear night sky. Long exposure photography capturing light movement."*
-
-![Aurora Borealis](Z-Image-Turbo-outputs-png/image_004_20251205_194243.png)
-
-### Test 5: Urban Street Photography at Night
-**Prompt:** *"Busy city street at night after rain, wet pavement reflecting neon signs and streetlights. Blurred motion of people with umbrellas walking past illuminated shop windows. Bokeh lights in background, moody cinematic atmosphere."*
-
-![Urban Night](Z-Image-Turbo-outputs-png/image_005_20251205_194525.png)
-
-### Test 6: Macro Nature Photography
-**Prompt:** *"Morning dewdrops on fresh green leaves backlit by golden sunrise. Each droplet catching and refracting light. Shallow depth of field with soft bokeh background. Delicate plant details visible, vibrant natural colors."*
-
-![Macro Dewdrops](Z-Image-Turbo-outputs-png/image_006_20251205_194805.png)
-
-### Test 7: Industrial and Mechanical Subjects
-**Prompt:** *"Vintage steam locomotive at an old railway station, dramatic side lighting highlighting mechanical details. Steam rising from the engine, rust and weathered metal textures. Sense of history and craftsmanship, documentary photography style."*
-
-![Steam Locomotive](Z-Image-Turbo-outputs-png/image_007_20251205_195049.png)
-
-### Test 8: Dramatic Portraiture with Elements
-**Prompt:** *"Portrait of a person with windswept hair against stormy sky backdrop. Fabric or scarf billowing dramatically in wind. Intense natural lighting from the side, raw emotion captured. Environmental portrait connecting subject to nature."*
-
-![Dramatic Portrait](Z-Image-Turbo-outputs-png/image_008_20251205_195329.png)
-
-### Test 9: Food Photography with Styling
-**Prompt:** *"Rustic breakfast scene on wooden table by window. Fresh bread, fruits, coffee in ceramic cup, natural morning light casting soft shadows. Steam rising from hot beverage, appetizing composition with natural textures and warm tones."*
-
-![Food Photography](Z-Image-Turbo-outputs-png/image_009_20251205_195612.png)
-
-### Test 10: Fantasy Realism
-**Prompt:** *"Ancient library with towering bookshelves reaching into darkness above. Floating books and glowing magical particles in the air. Single beam of light from high window illuminating dust motes. Mysterious and enchanting atmosphere, photorealistic rendering."*
-
-![Fantasy Library](Z-Image-Turbo-outputs-png/image_010_20251205_195851.png)
-
----
-
-These examples demonstrate Z-Image-Turbo's capabilities across:
-- ✨ Complex lighting and atmospheric effects (underwater caustics, storm lighting, aurora)
-- 🏗️ Architectural and geometric precision
-- 🌿 Natural and organic subjects (macro photography, forests, weather)
-- 🎨 Various artistic styles (street photography, portraiture, food styling)
-- ✨ Fantasy and creative concepts with photorealistic rendering
-
-All images generated at 512×512 resolution with 9 inference steps.
-
-## References
-
-- **Z-Image-Turbo**: [Hugging Face](https://huggingface.co/Tongyi-MAI/Z-Image-Turbo) | [Paper](https://arxiv.org/abs/2511.22699)
-- **SD-Turbo**: [Hugging Face](https://huggingface.co/stabilityai/sd-turbo)
-- **Stable Diffusion 1.5**: [Hugging Face](https://huggingface.co/runwayml/stable-diffusion-v1-5)
-- [Diffusers Documentation](https://huggingface.co/docs/diffusers)
-- [PyTorch](https://pytorch.org)
-
-## License
-
-- **Z-Image-Turbo**: Apache 2.0 License
-- **SD-Turbo**: Stability AI Community License
-- **Stable Diffusion 1.5**: CreativeML OpenRAIL-M License
-
-See individual model cards for full license details.
-
-## Contributing
-
-Feel free to open issues or submit pull requests for improvements!
-
----
-
-**Created**: 2025-12-05  
-**Last Updated**: Auto-updated after each inference run
-
-
-## Latest Benchmark Results
-
-**Last Run:** 2025-12-05 19:31:55
-
-**Configuration:**
-- Model: Tongyi-MAI/Z-Image-Turbo
-- Device: cuda
+**Test Configuration:**
 - Resolution: 512x512
-- Inference Steps: 9
-- Dtype: torch.bfloat16
+- Number of Prompts: 5
+- Seed: Random (different for each generation)
+- Hardware: NVIDIA GeForce RTX 3070 Ti
 
-**Performance Metrics:**
-- Total Images Generated: 10
-- Mean Inference Time: 161.44s ± 1.66s
-- Throughput: 0.01 images/second
-- Peak GPU Memory: 19753 MB (19.29 GB)
+### Performance Comparison
+
+| Model | Steps | CFG | Mean Time/Image | Throughput | Peak GPU Memory |
+|-------|-------|-----|-----------------|------------|-----------------|
+| z-image-turbo | 9 | 0.0 | 161.20s ± 23.46s | 0.006 img/s | 19.29 GB |
+| sd-turbo | 4 | 0.0 | 7.71s ± 0.09s | 0.130 img/s | 9.25 GB |
+| sd-1.5 | 25 | 7.5 | 4.04s ± 3.02s | 0.248 img/s | 2.60 GB |
+
+### Model Details
+
+**z-image-turbo** (Tongyi-MAI/Z-Image-Turbo)
+- 6B parameter Turbo DiT model
+- Inference steps: 9
+- Guidance scale: 0.0
+
+**sd-turbo** (stabilityai/sd-turbo)
+- Distilled SD 1.5 for speed
+- Inference steps: 4
+- Guidance scale: 0.0
+
+**sd-1.5** (runwayml/stable-diffusion-v1-5)
+- Classic SD 1.5 baseline
+- Inference steps: 25
+- Guidance scale: 7.5
+
+### Test Prompts
+
+1. Futuristic cityscape in heavy rain at night with neon reflections
+2. Ancient forest with bioluminescent plants and drifting fog
+3. Underwater research base with divers and service robots
+4. Abstract geometric sculpture made of glass, smoke, and colored light
+5. Snowy mountain village at dawn beneath an aurora
+
+### Sample Outputs
+
+Images are organized in the `comparison results/` directory by model name. Each model generated images for all test prompts.
+
+**z-image-turbo**: `comparison results/z-image-turbo/`
+**sd-turbo**: `comparison results/sd-turbo/`
+**sd-1.5**: `comparison results/sd-1.5/`
+
+## Visual Comparison Results
+
+This section displays side-by-side comparisons of all three models (Z-Image-Turbo, SD-Turbo, and SD 1.5) for each test prompt, allowing you to visually compare their outputs.
+
+### Prompt 1: Futuristic Cityscape
+**Prompt:** Futuristic cityscape in heavy rain at night with neon reflections
+
+| Z-Image-Turbo | SD-Turbo | SD 1.5 |
+|---------------|----------|--------|
+| ![Z-Image-Turbo](comparison%20results/z-image-turbo/prompt_01_20251205_201729.png) | ![SD-Turbo](comparison%20results/sd-turbo/prompt_01_20251205_203352.png) | ![SD-1.5](comparison%20results/sd-1.5/prompt_01_20251205_204139.png) |
+
+### Prompt 2: Ancient Forest
+**Prompt:** Ancient forest with bioluminescent plants and drifting fog
+
+| Z-Image-Turbo | SD-Turbo | SD 1.5 |
+|---------------|----------|--------|
+| ![Z-Image-Turbo](comparison%20results/z-image-turbo/prompt_02_20251205_202022.png) | ![SD-Turbo](comparison%20results/sd-turbo/prompt_02_20251205_203359.png) | ![SD-1.5](comparison%20results/sd-1.5/prompt_02_20251205_204141.png) |
+
+### Prompt 3: Underwater Research Base
+**Prompt:** Underwater research base with divers and service robots
+
+| Z-Image-Turbo | SD-Turbo | SD 1.5 |
+|---------------|----------|--------|
+| ![Z-Image-Turbo](comparison%20results/z-image-turbo/prompt_03_20251205_202316.png) | ![SD-Turbo](comparison%20results/sd-turbo/prompt_03_20251205_203407.png) | ![SD-1.5](comparison%20results/sd-1.5/prompt_03_20251205_204144.png) |
+
+### Prompt 4: Abstract Geometric Sculpture
+**Prompt:** Abstract geometric sculpture made of glass, smoke, and colored light
+
+| Z-Image-Turbo | SD-Turbo | SD 1.5 |
+|---------------|----------|--------|
+| ![Z-Image-Turbo](comparison%20results/z-image-turbo/prompt_04_20251205_202607.png) | ![SD-Turbo](comparison%20results/sd-turbo/prompt_04_20251205_203415.png) | ![SD-1.5](comparison%20results/sd-1.5/prompt_04_20251205_204146.png) |
+
+### Prompt 5: Snowy Mountain Village
+**Prompt:** Snowy mountain village at dawn beneath an aurora
+
+| Z-Image-Turbo | SD-Turbo | SD 1.5 |
+|---------------|----------|--------|
+| ![Z-Image-Turbo](comparison%20results/z-image-turbo/prompt_05_20251205_202802.png) | ![SD-Turbo](comparison%20results/sd-turbo/prompt_05_20251205_203423.png) | ![SD-1.5](comparison%20results/sd-1.5/prompt_05_20251205_204149.png) |
+
+### Analysis
+
+- **Fastest Model**: sd-1.5 (4.04s avg per image)
+- **Most Memory Efficient**: sd-1.5 (2.60 GB peak)
+
+## Z-Image-Turbo Extended Visual Results
+
+This section displays all generated images from Z-Image-Turbo with their corresponding prompts for visual comparison. These images showcase the model's capabilities across diverse photographic styles and scenarios.
+
+### Image Gallery
+
+#### Image 1: Underwater Scene with Complex Lighting
+**Prompt:** Underwater coral reef scene with sunlight streaming from above, creating dramatic light rays through the water. Schools of tropical fish swimming between colorful corals and sea anemones. Crystal clear turquoise water with natural depth and refraction effects.
+
+![Image 1](Z-Image-Turbo-outputs-png/image_001_20251205_193437.png)
+
+#### Image 2: Dynamic Weather and Atmospheric Effects
+**Prompt:** Storm clouds gathering over a wheat field at dusk. Lightning illuminating dark purple and grey clouds from within. Golden wheat swaying in strong wind, dramatic contrast between warm foreground and ominous sky. Wide cinematic landscape.
+
+![Image 2](Z-Image-Turbo-outputs-png/image_002_20251205_193720.png)
+
+#### Image 3: Abstract Architectural Photography
+**Prompt:** Modern minimalist architecture, geometric concrete structures with sharp angles and clean lines. Interplay of light and shadow on white surfaces. Single figure for scale walking through the space. High contrast black and white photography style.
+
+![Image 3](Z-Image-Turbo-outputs-png/image_003_20251205_193959.png)
+
+#### Image 4: Natural Phenomena
+**Prompt:** Aurora borealis dancing over a frozen lake surrounded by snow-covered pine forest. Green and purple lights reflecting on ice surface. Stars visible in clear night sky. Long exposure photography capturing light movement.
+
+![Image 4](Z-Image-Turbo-outputs-png/image_004_20251205_194243.png)
+
+#### Image 5: Urban Street Photography at Night
+**Prompt:** Busy city street at night after rain, wet pavement reflecting neon signs and streetlights. Blurred motion of people with umbrellas walking past illuminated shop windows. Bokeh lights in background, moody cinematic atmosphere.
+
+![Image 5](Z-Image-Turbo-outputs-png/image_005_20251205_194525.png)
+
+#### Image 6: Macro Nature Photography
+**Prompt:** Morning dewdrops on fresh green leaves backlit by golden sunrise. Each droplet catching and refracting light. Shallow depth of field with soft bokeh background. Delicate plant details visible, vibrant natural colors.
+
+![Image 6](Z-Image-Turbo-outputs-png/image_006_20251205_194805.png)
+
+#### Image 7: Industrial and Mechanical Subjects
+**Prompt:** Vintage steam locomotive at an old railway station, dramatic side lighting highlighting mechanical details. Steam rising from the engine, rust and weathered metal textures. Sense of history and craftsmanship, documentary photography style.
+
+![Image 7](Z-Image-Turbo-outputs-png/image_007_20251205_195049.png)
+
+#### Image 8: Dramatic Portraiture with Elements
+**Prompt:** Portrait of a person with windswept hair against stormy sky backdrop. Fabric or scarf billowing dramatically in wind. Intense natural lighting from the side, raw emotion captured. Environmental portrait connecting subject to nature.
+
+![Image 8](Z-Image-Turbo-outputs-png/image_008_20251205_195329.png)
+
+#### Image 9: Food Photography with Styling
+**Prompt:** Rustic breakfast scene on wooden table by window. Fresh bread, fruits, coffee in ceramic cup, natural morning light casting soft shadows. Steam rising from hot beverage, appetizing composition with natural textures and warm tones.
+
+![Image 9](Z-Image-Turbo-outputs-png/image_009_20251205_195612.png)
+
+#### Image 10: Fantasy Realism
+**Prompt:** Ancient library with towering bookshelves reaching into darkness above. Floating books and glowing magical particles in the air. Single beam of light from high window illuminating dust motes. Mysterious and enchanting atmosphere, photorealistic rendering.
+
+![Image 10](Z-Image-Turbo-outputs-png/image_010_20251205_195851.png)
+
+### Summary
+
+All Z-Image-Turbo generated images are stored in the `Z-Image-Turbo-outputs-png/` directory. The images above demonstrate the model's capabilities across diverse photographic styles and scenarios:
+
+- **Underwater scenes** with complex lighting and refraction
+- **Weather and atmospheric effects** with dramatic contrasts
+- **Architectural photography** with geometric precision
+- **Natural phenomena** like aurora borealis
+- **Urban night photography** with reflections and motion
+- **Macro photography** with shallow depth of field
+- **Industrial subjects** with texture and detail
+- **Portraiture** with environmental context
+- **Food photography** with natural styling
+- **Fantasy realism** blending magic with photorealism
+
+Each image was generated using Z-Image-Turbo with the prompts listed above, showcasing the model's versatility in handling different photographic styles and complex scene compositions.

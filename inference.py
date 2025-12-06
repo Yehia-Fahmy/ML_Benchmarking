@@ -62,7 +62,7 @@ IMAGE_WIDTH = 512
 SEED = None  # None for random generation
 
 # Output Settings
-OUTPUT_DIR = "outputs"
+OUTPUT_DIR = "comparison_results"
 BENCHMARK_FILE = "benchmark_results.json"
 
 # ============================================================================
@@ -455,10 +455,10 @@ def update_readme_with_results(all_results: List[Dict]):
         comparison_section += f"{idx}. {prompt}\n"
     
     comparison_section += "\n### Sample Outputs\n\n"
-    comparison_section += "Images are organized in the `outputs/` directory by model name. Each model generated images for all test prompts.\n\n"
+    comparison_section += "Images are organized in the `comparison_results/` directory by model name. Each model generated images for all test prompts.\n\n"
     
     for result in all_results:
-        comparison_section += f"**{result['model_name']}**: `outputs/{result['model_name']}/`\n"
+        comparison_section += f"**{result['model_name']}**: `comparison_results/{result['model_name']}/`\n"
     
     comparison_section += "\n### Analysis\n\n"
     
