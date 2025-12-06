@@ -43,7 +43,7 @@ from utils.export import (
 # ============================================================================
 
 # Models that use diffusers pipelines directly
-DIFFUSERS_MODELS = ["sd-turbo", "sd-1.5", "z-image-turbo"]
+DIFFUSERS_MODELS = ["z-image-turbo", "sd-turbo", "sd-1.5"]
 
 # Models that require external repos/special handling
 SPECIAL_MODELS = ["starflow-t2i"]
