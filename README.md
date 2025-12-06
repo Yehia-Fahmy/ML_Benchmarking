@@ -1,16 +1,17 @@
 # Multi-Model Image Generation Benchmark
 
-A comprehensive benchmarking suite comparing popular text-to-image models: [Z-Image-Turbo](https://huggingface.co/Tongyi-MAI/Z-Image-Turbo), [SD-Turbo](https://huggingface.co/stabilityai/sd-turbo), and [Stable Diffusion 1.5](https://huggingface.co/runwayml/stable-diffusion-v1-5).
+A comprehensive benchmarking suite comparing popular text-to-image models: [Z-Image-Turbo](https://huggingface.co/Tongyi-MAI/Z-Image-Turbo), [SD-Turbo](https://huggingface.co/stabilityai/sd-turbo), [Stable Diffusion 1.5](https://huggingface.co/runwayml/stable-diffusion-v1-5), and [STARFlow](https://huggingface.co/apple/starflow).
 
 ## Features
 
-- **Multi-Model Comparison**: Benchmark Z-Image-Turbo, SD-Turbo, and SD 1.5 side-by-side
+- **Multi-Model Comparison**: Benchmark Z-Image-Turbo, SD-Turbo, SD 1.5, and STARFlow side-by-side
 - **Intelligent GPU Detection**: Automatically detects and uses NVIDIA CUDA, Apple MPS (M1/M2/M3), or falls back to CPU
 - **Optimized for 8GB VRAM**: Memory-efficient settings perfect for RTX 3070 Ti and similar GPUs
 - **Comprehensive Benchmarking**: Tracks inference time, memory usage, and throughput per model
 - **Challenging Test Prompts**: 5 carefully selected prompts testing diverse generation capabilities
 - **Aggressive Memory Management**: Proper cleanup between models for stable multi-model runs
 - **Automatic Result Export**: Saves benchmark data to JSON and updates this README with comparison tables
+- **STARFlow Support**: Dedicated script for Apple's transformer autoregressive flow model
 
 ## System Requirements
 
@@ -100,6 +101,23 @@ python inference.py --models all
 - `z-image-turbo`: Tongyi-MAI Z-Image-Turbo (6B params, 9 steps, CFG=0)
 - `sd-turbo`: Stability AI SD-Turbo (distilled, 4 steps, CFG=0)
 - `sd-1.5`: Stable Diffusion 1.5 (classic baseline, 25 steps, CFG=7.5)
+
+### STARFlow Benchmark (Separate Script)
+
+To test Apple's STARFlow model:
+
+```bash
+python test_starflow.py --seed 12
+```
+
+See [STARFLOW_README.md](STARFLOW_README.md) for detailed documentation on the STARFlow benchmark script.
+
+Key features:
+- Automatic model download and setup
+- Tests with 3 challenging prompts + 1 random generation
+- Configurable seed (default: 12)
+- Comprehensive performance metrics
+- GPU memory tracking
 
 ### Test Prompts
 
