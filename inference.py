@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """
-Z-Image-Turbo Local Inference Script
+Multi-Model Image Generation Benchmark
+Compares Z-Image-Turbo, SD-Turbo, and Stable Diffusion 1.5 on challenging prompts.
 Supports NVIDIA CUDA, Apple MPS (M1/M2/M3), and CPU with performance benchmarking.
 """
 
+import argparse
 import json
 import os
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
+import gc
 
 import psutil
 import torch
@@ -19,48 +22,44 @@ from PIL import Image
 # CONFIGURATION SECTION - Edit your prompts and settings here
 # ============================================================================
 
+# Test prompts: challenging but not overly specific
 PROMPTS = [
-    # Test 9: Underwater scene with complex lighting
-    "Underwater coral reef scene with sunlight streaming from above, creating dramatic light rays through the water. Schools of tropical fish swimming between colorful corals and sea anemones. Crystal clear turquoise water with natural depth and refraction effects.",
-    
-    # Test 10: Dynamic weather and atmospheric effects
-    "Storm clouds gathering over a wheat field at dusk. Lightning illuminating dark purple and grey clouds from within. Golden wheat swaying in strong wind, dramatic contrast between warm foreground and ominous sky. Wide cinematic landscape.",
-    
-    # Test 11: Abstract architectural photography
-    "Modern minimalist architecture, geometric concrete structures with sharp angles and clean lines. Interplay of light and shadow on white surfaces. Single figure for scale walking through the space. High contrast black and white photography style.",
-    
-    # Test 12: Natural phenomena
-    "Aurora borealis dancing over a frozen lake surrounded by snow-covered pine forest. Green and purple lights reflecting on ice surface. Stars visible in clear night sky. Long exposure photography capturing light movement.",
-    
-    # Test 13: Urban street photography at night
-    "Busy city street at night after rain, wet pavement reflecting neon signs and streetlights. Blurred motion of people with umbrellas walking past illuminated shop windows. Bokeh lights in background, moody cinematic atmosphere.",
-    
-    # Test 14: Macro nature photography
-    "Morning dewdrops on fresh green leaves backlit by golden sunrise. Each droplet catching and refracting light. Shallow depth of field with soft bokeh background. Delicate plant details visible, vibrant natural colors.",
-    
-    # Test 15: Industrial and mechanical subjects
-    "Vintage steam locomotive at an old railway station, dramatic side lighting highlighting mechanical details. Steam rising from the engine, rust and weathered metal textures. Sense of history and craftsmanship, documentary photography style.",
-    
-    # Test 16: Dramatic portraiture with elements
-    "Portrait of a person with windswept hair against stormy sky backdrop. Fabric or scarf billowing dramatically in wind. Intense natural lighting from the side, raw emotion captured. Environmental portrait connecting subject to nature.",
-    
-    # Test 17: Food photography with styling
-    "Rustic breakfast scene on wooden table by window. Fresh bread, fruits, coffee in ceramic cup, natural morning light casting soft shadows. Steam rising from hot beverage, appetizing composition with natural textures and warm tones.",
-    
-    # Test 18: Fantasy realism
-    "Ancient library with towering bookshelves reaching into darkness above. Floating books and glowing magical particles in the air. Single beam of light from high window illuminating dust motes. Mysterious and enchanting atmosphere, photorealistic rendering.",
+    "Futuristic cityscape in heavy rain at night with neon reflections",
+    "Ancient forest with bioluminescent plants and drifting fog",
+    "Underwater research base with divers and service robots",
+    "Abstract geometric sculpture made of glass, smoke, and colored light",
+    "Snowy mountain village at dawn beneath an aurora",
 ]
+
+# Model configurations
+MODEL_CONFIGS = {
+    "z-image-turbo": {
+        "model_id": "Tongyi-MAI/Z-Image-Turbo",
+        "pipeline_class": "ZImagePipeline",
+        "num_inference_steps": 9,
+        "guidance_scale": 0.0,
+        "description": "6B parameter Turbo DiT model",
+    },
+    "sd-turbo": {
+        "model_id": "stabilityai/sd-turbo",
+        "pipeline_class": "AutoPipelineForText2Image",
+        "num_inference_steps": 4,
+        "guidance_scale": 0.0,
+        "description": "Distilled SD 1.5 for speed",
+    },
+    "sd-1.5": {
+        "model_id": "runwayml/stable-diffusion-v1-5",
+        "pipeline_class": "StableDiffusionPipeline",
+        "num_inference_steps": 25,
+        "guidance_scale": 7.5,
+        "description": "Classic SD 1.5 baseline",
+    },
+}
 
 # Generation Parameters
 IMAGE_HEIGHT = 512
 IMAGE_WIDTH = 512
-NUM_INFERENCE_STEPS = 9  # Results in 8 DiT forwards for Turbo model
-GUIDANCE_SCALE = 0.0  # Should be 0 for Turbo models
-SEED = None  # Set to None for random generation
-
-# Model Settings
-MODEL_ID = "Tongyi-MAI/Z-Image-Turbo"
-USE_MODEL_COMPILATION = False  # Set to True for faster inference (first run will be slower)
+SEED = None  # None for random generation
 
 # Output Settings
 OUTPUT_DIR = "outputs"
@@ -115,91 +114,94 @@ def get_gpu_memory_usage(device: str) -> float:
     return 0.0
 
 
-def get_gpu_utilization(device: str) -> float:
-    """Get GPU utilization percentage (NVIDIA only)."""
-    if device == "cuda":
-        try:
-            import GPUtil
-            gpus = GPUtil.getGPUs()
-            if gpus:
-                return gpus[0].load * 100
-        except ImportError:
-            pass
-    return 0.0
+def cleanup_memory(device: str, pipe=None):
+    """Aggressively clean up memory between model runs."""
+    if pipe is not None:
+        del pipe
+    
+    # Force garbage collection
+    gc.collect()
+    
+    # Clear CUDA cache if available
+    if device == "cuda" and torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+        torch.cuda.ipc_collect()
 
 
 # ============================================================================
 # MODEL LOADING
 # ============================================================================
 
-def load_model(device: str, dtype: torch.dtype):
-    """Load Z-Image-Turbo pipeline with appropriate settings."""
-    from diffusers import ZImagePipeline
+def load_model(model_name: str, device: str, dtype: torch.dtype):
+    """Load the specified model pipeline with appropriate settings."""
+    config = MODEL_CONFIGS[model_name]
     
     print("=" * 70)
     print("LOADING MODEL")
     print("=" * 70)
-    print(f"Model: {MODEL_ID}")
+    print(f"Model: {model_name}")
+    print(f"Model ID: {config['model_id']}")
+    print(f"Description: {config['description']}")
     print(f"Device: {device}")
     print(f"Dtype: {dtype}")
     print()
     
-    # Clear GPU cache before loading model to prevent memory leaks
-    if device == "cuda":
-        torch.cuda.empty_cache()
-        torch.cuda.synchronize()
-        print("✓ GPU cache cleared before loading")
+    # Clear GPU cache before loading model
+    cleanup_memory(device)
     
     print("Downloading/loading model weights... (this may take a while on first run)")
     
     start_time = time.time()
     
-    # Load pipeline without dtype parameter (it's not supported and will be ignored)
-    # We'll convert to the right dtype after loading
-    pipe = ZImagePipeline.from_pretrained(
-        MODEL_ID,
-        low_cpu_mem_usage=True,
-    )
+    # Load the appropriate pipeline
+    if config["pipeline_class"] == "ZImagePipeline":
+        from diffusers import ZImagePipeline
+        pipe = ZImagePipeline.from_pretrained(
+            config["model_id"],
+            low_cpu_mem_usage=True,
+        )
+    elif config["pipeline_class"] == "AutoPipelineForText2Image":
+        from diffusers import AutoPipelineForText2Image
+        pipe = AutoPipelineForText2Image.from_pretrained(
+            config["model_id"],
+            torch_dtype=dtype,
+            low_cpu_mem_usage=True,
+        )
+    else:  # StableDiffusionPipeline
+        from diffusers import StableDiffusionPipeline
+        pipe = StableDiffusionPipeline.from_pretrained(
+            config["model_id"],
+            torch_dtype=dtype,
+            low_cpu_mem_usage=True,
+        )
     
-    # Move to device and convert dtype manually
+    # Move to device and convert dtype
     pipe = pipe.to(device, dtype=dtype)
     print(f"✓ Model moved to {device} with dtype {dtype}")
     
-    # Enable memory-efficient features
+    # Enable memory-efficient features for CUDA
     if device == "cuda":
-        # Enable Flash Attention for better efficiency (if supported)
-        try:
-            pipe.transformer.set_attention_backend("flash")
-            print("✓ Flash Attention enabled")
-        except Exception as e:
-            print(f"⚠ Flash Attention not available: {e}")
-        
-        # Enable memory-efficient attention (sliced attention)
+        # Enable attention slicing
         try:
             pipe.enable_attention_slicing(slice_size="auto")
             print("✓ Attention slicing enabled")
         except Exception as e:
             print(f"⚠ Attention slicing not available: {e}")
         
-        # Enable VAE slicing to reduce memory usage during decoding
+        # Enable VAE slicing
         try:
             pipe.enable_vae_slicing()
             print("✓ VAE slicing enabled")
         except Exception as e:
             print(f"⚠ VAE slicing not available: {e}")
         
-        # Enable VAE tiling for large images to reduce memory
+        # Enable VAE tiling
         try:
             pipe.enable_vae_tiling()
             print("✓ VAE tiling enabled")
         except Exception as e:
             print(f"⚠ VAE tiling not available: {e}")
-    
-    # Optional: Model compilation
-    if USE_MODEL_COMPILATION:
-        print("Compiling model... (first inference will be slower)")
-        pipe.transformer.compile()
-        print("✓ Model compilation enabled")
     
     load_time = time.time() - start_time
     print(f"\n✓ Model loaded successfully in {load_time:.2f}s")
@@ -215,6 +217,7 @@ def load_model(device: str, dtype: torch.dtype):
 
 def run_inference_with_benchmark(
     pipe,
+    model_name: str,
     prompts: List[str],
     device: str,
     output_dir: Path
@@ -225,19 +228,22 @@ def run_inference_with_benchmark(
     Returns:
         Dictionary containing benchmark results
     """
-    output_dir.mkdir(parents=True, exist_ok=True)
+    config = MODEL_CONFIGS[model_name]
+    model_output_dir = output_dir / model_name
+    model_output_dir.mkdir(parents=True, exist_ok=True)
     
     results = {
-        "model": MODEL_ID,
+        "model_name": model_name,
+        "model_id": config["model_id"],
+        "description": config["description"],
         "device": device,
         "timestamp": datetime.now().isoformat(),
         "config": {
             "height": IMAGE_HEIGHT,
             "width": IMAGE_WIDTH,
-            "num_inference_steps": NUM_INFERENCE_STEPS,
-            "guidance_scale": GUIDANCE_SCALE,
-            "dtype": str(pipe.transformer.dtype),
-            "model_compilation": USE_MODEL_COMPILATION,
+            "num_inference_steps": config["num_inference_steps"],
+            "guidance_scale": config["guidance_scale"],
+            "dtype": str(pipe.transformer.dtype) if hasattr(pipe, 'transformer') else str(pipe.unet.dtype),
         },
         "system_info": {
             "cpu_count": psutil.cpu_count(),
@@ -255,14 +261,14 @@ def run_inference_with_benchmark(
     
     # Main inference loop with benchmarking
     print("=" * 70)
-    print("GENERATING IMAGES")
+    print(f"GENERATING IMAGES - {model_name.upper()}")
     print("=" * 70)
     
     for idx, prompt in enumerate(prompts, 1):
         print(f"\n[{idx}/{len(prompts)}] Generating image...")
-        print(f"Prompt: {prompt[:80]}{'...' if len(prompt) > 80 else ''}")
+        print(f"Prompt: {prompt}")
         
-        # Clear GPU cache before each generation to prevent fragmentation
+        # Clear GPU cache before each generation
         if device == "cuda":
             torch.cuda.empty_cache()
             torch.cuda.synchronize()
@@ -272,22 +278,19 @@ def run_inference_with_benchmark(
         mem_before = process.memory_info().rss / (1024**2)
         gpu_mem_before = get_gpu_memory_usage(device)
         
-        # Generate image with timing and gradient-free inference
+        # Generate image with timing
         start_time = time.time()
         
-        # Only create and seed generator if SEED is provided
-        if SEED is not None:
-            generator = torch.Generator(device).manual_seed(SEED + idx)
-        else:
-            generator = None  # Random seed will be used
+        # Random seed for each generation (None = random)
+        generator = None
         
         with torch.no_grad():  # Disable gradient tracking for inference
             image = pipe(
                 prompt=prompt,
                 height=IMAGE_HEIGHT,
                 width=IMAGE_WIDTH,
-                num_inference_steps=NUM_INFERENCE_STEPS,
-                guidance_scale=GUIDANCE_SCALE,
+                num_inference_steps=config["num_inference_steps"],
+                guidance_scale=config["guidance_scale"],
                 generator=generator,
             ).images[0]
         
@@ -300,19 +303,18 @@ def run_inference_with_benchmark(
         # Track memory after generation
         mem_after = process.memory_info().rss / (1024**2)
         gpu_mem_after = get_gpu_memory_usage(device)
-        gpu_util = get_gpu_utilization(device)
         
         # Save image
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"image_{idx:03d}_{timestamp}.png"
-        filepath = output_dir / filename
+        filename = f"prompt_{idx:02d}_{timestamp}.png"
+        filepath = model_output_dir / filename
         image.save(filepath)
         
         # Record metrics
         gen_result = {
             "index": idx,
             "prompt": prompt,
-            "filename": filename,
+            "filename": str(filepath.relative_to(output_dir)),
             "inference_time_seconds": inference_time,
             "images_per_second": 1.0 / inference_time,
             "cpu_memory_mb": mem_after - mem_before,
@@ -322,8 +324,6 @@ def run_inference_with_benchmark(
         if device == "cuda":
             gen_result["gpu_memory_mb"] = gpu_mem_after - gpu_mem_before
             gen_result["peak_gpu_memory_mb"] = gpu_mem_after
-            if gpu_util > 0:
-                gen_result["gpu_utilization_percent"] = gpu_util
         
         results["generations"].append(gen_result)
         
@@ -357,26 +357,32 @@ def run_inference_with_benchmark(
 # RESULTS EXPORT AND DISPLAY
 # ============================================================================
 
-def save_benchmark_results(results: Dict, filepath: str):
+def save_benchmark_results(all_results: List[Dict], filepath: str):
     """Save benchmark results to JSON file."""
+    output = {
+        "benchmark_timestamp": datetime.now().isoformat(),
+        "models": all_results,
+    }
     with open(filepath, 'w') as f:
-        json.dump(results, f, indent=2)
+        json.dump(output, f, indent=2)
     print(f"✓ Benchmark results saved to: {filepath}")
 
 
 def print_summary(results: Dict):
     """Print formatted summary of benchmark results."""
     print("\n" + "=" * 70)
-    print("BENCHMARK SUMMARY")
+    print(f"BENCHMARK SUMMARY - {results['model_name'].upper()}")
     print("=" * 70)
     
     summary = results["summary"]
     config = results["config"]
     
-    print(f"\nModel: {results['model']}")
+    print(f"\nModel: {results['model_id']}")
+    print(f"Description: {results['description']}")
     print(f"Device: {results['device']}")
     print(f"Resolution: {config['height']}x{config['width']}")
     print(f"Inference Steps: {config['num_inference_steps']}")
+    print(f"Guidance Scale: {config['guidance_scale']}")
     
     print(f"\nPerformance:")
     print(f"  Total Images: {summary['total_images']}")
@@ -384,9 +390,9 @@ def print_summary(results: Dict):
     print(f"  Mean Time: {summary['mean_time_seconds']:.2f}s ± {summary['std_time_seconds']:.2f}s")
     print(f"  Min Time: {summary['min_time_seconds']:.2f}s")
     print(f"  Max Time: {summary['max_time_seconds']:.2f}s")
-    print(f"  Throughput: {summary['mean_images_per_second']:.2f} images/second")
+    print(f"  Throughput: {summary['mean_images_per_second']:.3f} images/second")
     
-    if results["device"] == "cuda" and "peak_gpu_memory_mb" in results["generations"][0]:
+    if results["device"] == "cuda" and len(results["generations"]) > 0 and "peak_gpu_memory_mb" in results["generations"][0]:
         max_gpu_mem = max(g.get("peak_gpu_memory_mb", 0) for g in results["generations"])
         print(f"\nGPU Memory:")
         print(f"  Peak Usage: {max_gpu_mem:.0f} MB ({max_gpu_mem/1024:.2f} GB)")
@@ -394,8 +400,8 @@ def print_summary(results: Dict):
     print("\n" + "=" * 70)
 
 
-def update_readme_with_results(results: Dict):
-    """Update README.md with latest benchmark results."""
+def update_readme_with_results(all_results: List[Dict]):
+    """Update README.md with multi-model comparison results."""
     readme_path = Path("README.md")
     
     if not readme_path.exists():
@@ -406,55 +412,101 @@ def update_readme_with_results(results: Dict):
     with open(readme_path, 'r') as f:
         content = f.read()
     
-    # Create benchmark section
-    summary = results["summary"]
-    config = results["config"]
-    timestamp = datetime.fromisoformat(results["timestamp"]).strftime("%Y-%m-%d %H:%M:%S")
+    # Create comparison section
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    benchmark_section = f"""
-## Latest Benchmark Results
+    comparison_section = f"""## Model Comparison Results
 
 **Last Run:** {timestamp}
 
-**Configuration:**
-- Model: {results['model']}
-- Device: {results['device']}
-- Resolution: {config['height']}x{config['width']}
-- Inference Steps: {config['num_inference_steps']}
-- Dtype: {config['dtype']}
+**Test Configuration:**
+- Resolution: {IMAGE_HEIGHT}x{IMAGE_WIDTH}
+- Number of Prompts: {len(PROMPTS)}
+- Seed: Random (different for each generation)
+- Hardware: {all_results[0]['system_info']['gpu_name'] if all_results[0]['device'] == 'cuda' else 'CPU'}
 
-**Performance Metrics:**
-- Total Images Generated: {summary['total_images']}
-- Mean Inference Time: {summary['mean_time_seconds']:.2f}s ± {summary['std_time_seconds']:.2f}s
-- Throughput: {summary['mean_images_per_second']:.2f} images/second
+### Performance Comparison
+
+| Model | Steps | CFG | Mean Time/Image | Throughput | Peak GPU Memory |
+|-------|-------|-----|-----------------|------------|-----------------|
 """
     
-    if results["device"] == "cuda" and "peak_gpu_memory_mb" in results["generations"][0]:
-        max_gpu_mem = max(g.get("peak_gpu_memory_mb", 0) for g in results["generations"])
-        benchmark_section += f"- Peak GPU Memory: {max_gpu_mem:.0f} MB ({max_gpu_mem/1024:.2f} GB)\n"
+    for result in all_results:
+        summary = result["summary"]
+        config = result["config"]
+        peak_mem = "N/A"
+        
+        if result["device"] == "cuda" and len(result["generations"]) > 0 and "peak_gpu_memory_mb" in result["generations"][0]:
+            max_gpu_mem = max(g.get("peak_gpu_memory_mb", 0) for g in result["generations"])
+            peak_mem = f"{max_gpu_mem/1024:.2f} GB"
+        
+        comparison_section += f"| {result['model_name']} | {config['num_inference_steps']} | {config['guidance_scale']} | {summary['mean_time_seconds']:.2f}s ± {summary['std_time_seconds']:.2f}s | {summary['mean_images_per_second']:.3f} img/s | {peak_mem} |\n"
     
-    # Find and replace benchmark section
-    start_marker = "## Latest Benchmark Results"
+    comparison_section += "\n### Model Details\n\n"
+    
+    for result in all_results:
+        comparison_section += f"**{result['model_name']}** ({result['model_id']})\n"
+        comparison_section += f"- {result['description']}\n"
+        comparison_section += f"- Inference steps: {result['config']['num_inference_steps']}\n"
+        comparison_section += f"- Guidance scale: {result['config']['guidance_scale']}\n\n"
+    
+    comparison_section += "### Test Prompts\n\n"
+    for idx, prompt in enumerate(PROMPTS, 1):
+        comparison_section += f"{idx}. {prompt}\n"
+    
+    comparison_section += "\n### Sample Outputs\n\n"
+    comparison_section += "Images are organized in the `outputs/` directory by model name. Each model generated images for all test prompts.\n\n"
+    
+    for result in all_results:
+        comparison_section += f"**{result['model_name']}**: `outputs/{result['model_name']}/`\n"
+    
+    comparison_section += "\n### Analysis\n\n"
+    
+    # Find fastest model
+    fastest = min(all_results, key=lambda x: x["summary"]["mean_time_seconds"])
+    comparison_section += f"- **Fastest Model**: {fastest['model_name']} ({fastest['summary']['mean_time_seconds']:.2f}s avg per image)\n"
+    
+    # Memory usage
+    if all_results[0]["device"] == "cuda":
+        memory_sorted = []
+        for result in all_results:
+            if len(result["generations"]) > 0 and "peak_gpu_memory_mb" in result["generations"][0]:
+                max_mem = max(g.get("peak_gpu_memory_mb", 0) for g in result["generations"])
+                memory_sorted.append((result["model_name"], max_mem))
+        
+        if memory_sorted:
+            memory_sorted.sort(key=lambda x: x[1])
+            comparison_section += f"- **Most Memory Efficient**: {memory_sorted[0][0]} ({memory_sorted[0][1]/1024:.2f} GB peak)\n"
+    
+    comparison_section += "\n"
+    
+    # Find and replace the model comparison section
+    start_marker = "## Model Comparison Results"
+    
+    # Find the start of any existing section and replace everything from there to the end
     if start_marker in content:
-        # Find the start of the section
         start_idx = content.find(start_marker)
-        # Find the next section (starts with ##) or end of file
-        next_section = content.find("\n##", start_idx + len(start_marker))
-        if next_section == -1:
-            # No next section, replace to end
-            content = content[:start_idx] + benchmark_section.strip() + "\n"
-        else:
-            # Replace up to next section
-            content = content[:start_idx] + benchmark_section.strip() + "\n\n" + content[next_section + 1:]
+        content = content[:start_idx] + comparison_section.strip() + "\n"
     else:
-        # Append to end
-        content += "\n" + benchmark_section.strip() + "\n"
+        # Find "## Latest Benchmark Results" or "## Generated Examples" and replace from there
+        markers_to_try = ["## Latest Benchmark Results", "## Generated Examples", "## Model Information"]
+        replaced = False
+        for marker in markers_to_try:
+            if marker in content:
+                start_idx = content.find(marker)
+                content = content[:start_idx] + comparison_section.strip() + "\n"
+                replaced = True
+                break
+        
+        if not replaced:
+            # Append to end
+            content += "\n" + comparison_section.strip() + "\n"
     
     # Write updated README
     with open(readme_path, 'w') as f:
         f.write(content)
     
-    print(f"✓ README.md updated with benchmark results")
+    print(f"✓ README.md updated with model comparison results")
 
 
 # ============================================================================
@@ -463,41 +515,82 @@ def update_readme_with_results(results: Dict):
 
 def main():
     """Main execution function."""
+    parser = argparse.ArgumentParser(description="Multi-Model Image Generation Benchmark")
+    parser.add_argument(
+        "--models",
+        nargs="+",
+        choices=list(MODEL_CONFIGS.keys()) + ["all"],
+        default=["all"],
+        help="Models to benchmark (default: all)"
+    )
+    args = parser.parse_args()
+    
+    # Determine which models to run
+    if "all" in args.models:
+        models_to_run = list(MODEL_CONFIGS.keys())
+    else:
+        models_to_run = args.models
+    
     print("\n" + "=" * 70)
-    print("Z-IMAGE-TURBO LOCAL INFERENCE")
+    print("MULTI-MODEL IMAGE GENERATION BENCHMARK")
     print("=" * 70)
     print(f"Start Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Models to benchmark: {', '.join(models_to_run)}")
+    print(f"Number of prompts: {len(PROMPTS)}")
     print("=" * 70)
     print()
     
     # Detect device
     device, dtype = detect_device()
     
-    # Clear any leftover GPU memory from previous runs
-    if device == "cuda":
-        torch.cuda.empty_cache()
-        torch.cuda.synchronize()
-        print("✓ GPU cache cleared from any previous runs")
-        print()
+    # Clear any leftover GPU memory
+    cleanup_memory(device)
     
-    # Load model
-    pipe = load_model(device, dtype)
-    
-    # Run inference with benchmarking
+    # Run benchmark for each model
+    all_results = []
     output_dir = Path(OUTPUT_DIR)
-    results = run_inference_with_benchmark(pipe, PROMPTS, device, output_dir)
     
-    # Save and display results
-    save_benchmark_results(results, BENCHMARK_FILE)
-    print_summary(results)
-    update_readme_with_results(results)
+    for model_name in models_to_run:
+        print(f"\n{'='*70}")
+        print(f"BENCHMARKING MODEL: {model_name.upper()}")
+        print(f"{'='*70}\n")
+        
+        # Load model
+        pipe = load_model(model_name, device, dtype)
+        
+        # Run inference with benchmarking
+        results = run_inference_with_benchmark(pipe, model_name, PROMPTS, device, output_dir)
+        all_results.append(results)
+        
+        # Print summary for this model
+        print_summary(results)
+        
+        # Clean up before loading next model
+        cleanup_memory(device, pipe)
+        
+        print(f"\n✓ Completed benchmark for {model_name}")
+        print(f"✓ Images saved to: {output_dir / model_name}/")
+        
+        # Add a pause between models to ensure memory is fully cleared
+        if device == "cuda":
+            time.sleep(2)
     
-    print("\n✓ All tasks completed successfully!")
+    # Save combined results
+    save_benchmark_results(all_results, BENCHMARK_FILE)
+    
+    # Update README with comparison
+    update_readme_with_results(all_results)
+    
+    print("\n" + "=" * 70)
+    print("ALL BENCHMARKS COMPLETED SUCCESSFULLY!")
+    print("=" * 70)
+    print(f"✓ Total models benchmarked: {len(all_results)}")
+    print(f"✓ Total images generated: {sum(r['summary']['total_images'] for r in all_results)}")
     print(f"✓ Images saved to: {output_dir}/")
     print(f"✓ Benchmark data: {BENCHMARK_FILE}")
+    print(f"✓ README.md updated with comparison")
     print()
 
 
 if __name__ == "__main__":
     main()
-

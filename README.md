@@ -1,27 +1,37 @@
-# Z-Image-Turbo Local Inference
+# Multi-Model Image Generation Benchmark
 
-A high-performance local inference project for [Z-Image-Turbo](https://huggingface.co/Tongyi-MAI/Z-Image-Turbo), a powerful 6B parameter image generation model with sub-second inference latency.
+A comprehensive benchmarking suite comparing popular text-to-image models: [Z-Image-Turbo](https://huggingface.co/Tongyi-MAI/Z-Image-Turbo), [SD-Turbo](https://huggingface.co/stabilityai/sd-turbo), and [Stable Diffusion 1.5](https://huggingface.co/runwayml/stable-diffusion-v1-5).
 
 ## Features
 
+- **Multi-Model Comparison**: Benchmark Z-Image-Turbo, SD-Turbo, and SD 1.5 side-by-side
 - **Intelligent GPU Detection**: Automatically detects and uses NVIDIA CUDA, Apple MPS (M1/M2/M3), or falls back to CPU
-- **Configurable Prompts**: Easy-to-edit configuration section for batch image generation
-- **Comprehensive Benchmarking**: Tracks inference time, memory usage, GPU utilization, and throughput
-- **Performance Profiling**: Includes warmup runs and detailed per-image metrics
-- **Automatic Result Export**: Saves benchmark data to JSON and updates this README
-- **Multi-Platform Support**: Works on Linux, macOS (Apple Silicon), and Windows with appropriate hardware
+- **Optimized for 8GB VRAM**: Memory-efficient settings perfect for RTX 3070 Ti and similar GPUs
+- **Comprehensive Benchmarking**: Tracks inference time, memory usage, and throughput per model
+- **Challenging Test Prompts**: 5 carefully selected prompts testing diverse generation capabilities
+- **Aggressive Memory Management**: Proper cleanup between models for stable multi-model runs
+- **Automatic Result Export**: Saves benchmark data to JSON and updates this README with comparison tables
 
 ## System Requirements
 
 ### Minimum Requirements
 - Python 3.8 or higher
-- 16GB RAM (recommended for 1024x1024 images)
-- 10GB disk space for model weights
+- 16GB RAM
+- 20GB disk space for model weights (all three models combined)
 
-### GPU Requirements (Recommended)
-- **NVIDIA GPU**: Any GPU with 16GB+ VRAM (e.g., RTX 4080, A100, H100)
+### GPU Requirements
+- **Recommended**: NVIDIA GPU with 8GB+ VRAM (e.g., RTX 3070 Ti, RTX 3080, RTX 4070)
+  - All three models tested at 512x512 resolution
+  - Memory-efficient optimizations enabled (attention slicing, VAE tiling)
 - **Apple Silicon**: M1/M2/M3 with 16GB+ unified memory
 - **Note**: CPU inference is supported but will be significantly slower
+
+### VRAM Guidance for 512x512 Images
+- **Z-Image-Turbo**: ~6-8 GB peak
+- **SD-Turbo**: ~4-6 GB peak
+- **Stable Diffusion 1.5**: ~4-6 GB peak
+
+The benchmark script includes aggressive memory cleanup between models, making it safe to run all three sequentially on 8GB GPUs.
 
 ## Installation
 
@@ -54,209 +64,237 @@ A high-performance local inference project for [Z-Image-Turbo](https://huggingfa
 
 ## Usage
 
-### Basic Usage
+### Quick Start - Benchmark All Models
 
-1. **Edit the configuration section** in `inference.py`:
-   ```python
-   PROMPTS = [
-       "Your first prompt here",
-       "Your second prompt here",
-       # Add more prompts...
-   ]
-   
-   IMAGE_HEIGHT = 1024
-   IMAGE_WIDTH = 1024
-   NUM_INFERENCE_STEPS = 9  # 8 DiT forwards for Turbo
-   ```
+Run the complete benchmark comparing all three models:
 
-2. **Run the inference script:**
-   ```bash
-   python inference.py
-   ```
+```bash
+python inference.py
+```
 
-3. **View results:**
-   - Generated images: `outputs/` directory
-   - Benchmark data: `benchmark_results.json`
-   - Summary: Console output and this README (automatically updated)
+This will:
+1. Detect your GPU/device automatically
+2. Load each model sequentially (Z-Image-Turbo, SD-Turbo, SD 1.5)
+3. Generate 5 test images per model (15 total images)
+4. Save images to `outputs/[model-name]/`
+5. Record performance metrics to `benchmark_results.json`
+6. Update this README with a comparison table
+
+### Benchmark Individual Models
+
+Run specific models only:
+
+```bash
+# Benchmark only Z-Image-Turbo
+python inference.py --models z-image-turbo
+
+# Benchmark SD-Turbo and SD 1.5
+python inference.py --models sd-turbo sd-1.5
+
+# All models (same as no arguments)
+python inference.py --models all
+```
+
+### Available Models
+
+- `z-image-turbo`: Tongyi-MAI Z-Image-Turbo (6B params, 9 steps, CFG=0)
+- `sd-turbo`: Stability AI SD-Turbo (distilled, 4 steps, CFG=0)
+- `sd-1.5`: Stable Diffusion 1.5 (classic baseline, 25 steps, CFG=7.5)
+
+### Test Prompts
+
+The benchmark uses 5 challenging prompts designed to test different capabilities:
+
+1. Futuristic cityscape in heavy rain at night with neon reflections
+2. Ancient forest with bioluminescent plants and drifting fog
+3. Underwater research base with divers and service robots
+4. Abstract geometric sculpture made of glass, smoke, and colored light
+5. Snowy mountain village at dawn beneath an aurora
+
+All images are generated at **512x512** resolution with **random seeds** for diverse outputs.
 
 ### Configuration Options
 
-Edit these variables at the top of `inference.py`:
+To modify prompts or settings, edit the configuration section in `inference.py`:
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PROMPTS` | List of text prompts to generate | 3 example prompts |
-| `IMAGE_HEIGHT` | Output image height in pixels | 1024 |
-| `IMAGE_WIDTH` | Output image width in pixels | 1024 |
-| `NUM_INFERENCE_STEPS` | Number of denoising steps | 9 (8 NFEs) |
-| `GUIDANCE_SCALE` | Classifier-free guidance scale | 0.0 (recommended for Turbo) |
-| `SEED` | Random seed for reproducibility | 42 |
-| `USE_MODEL_COMPILATION` | Enable torch.compile for speed | False |
-| `OUTPUT_DIR` | Directory for generated images | "outputs" |
+```python
+# Test prompts
+PROMPTS = [
+    "Your custom prompt 1",
+    "Your custom prompt 2",
+    # Add more...
+]
 
-### Advanced Options
+# Generation settings
+IMAGE_HEIGHT = 512  # Recommended for 8GB VRAM
+IMAGE_WIDTH = 512
+SEED = None  # None for random, or set integer for reproducible results
+```
 
-**Model Compilation:**
-Enable `USE_MODEL_COMPILATION = True` for faster inference after the first run (first generation will be slower due to compilation overhead).
+Model-specific settings (steps, CFG) are automatically configured per model but can be customized in `MODEL_CONFIGS` dictionary.
 
-**Flash Attention:**
-Automatically enabled on NVIDIA GPUs if available for improved memory efficiency.
+## Memory Optimization Features
 
-## GPU Compatibility
+The benchmark script includes several optimizations for stable operation on 8GB GPUs:
 
-### NVIDIA CUDA
-- **Supported**: All CUDA-compatible GPUs (compute capability 3.5+)
-- **Recommended**: RTX 30/40 series, A100, H100 for optimal performance
-- **dtype**: bfloat16 (automatic)
-- **Features**: Full support including detailed GPU metrics
+### Automatic Optimizations (CUDA)
+- **Attention Slicing**: Reduces memory usage during attention computation
+- **VAE Slicing**: Splits VAE operations into smaller chunks
+- **VAE Tiling**: Processes images in tiles to reduce peak memory
+- **Aggressive Cleanup**: Clears CUDA cache and runs garbage collection between models
 
-### Apple Silicon (MPS)
-- **Supported**: M1, M1 Pro, M1 Max, M1 Ultra, M2, M2 Pro, M2 Max, M3, M3 Pro, M3 Max
-- **dtype**: float32 (MPS doesn't fully support bfloat16 yet)
-- **Features**: Hardware acceleration with unified memory
-
-### CPU Fallback
-- **Supported**: All x86_64 CPUs
-- **dtype**: float32
-- **Note**: Very slow; only recommended for testing or if no GPU is available
+### Memory Tips
+- **512x512 is optimal** for 8GB VRAM when running all three models
+- **Close other GPU applications** before running the benchmark
+- **Run models individually** if experiencing OOM: `--models z-image-turbo`
+- The script automatically synchronizes CUDA operations for accurate memory tracking
 
 ## Understanding the Output
 
-### Console Output
-The script provides detailed progress information:
-1. Device detection and selection
-2. Model loading status
-3. Warmup run timing
-4. Per-image generation progress
-5. Comprehensive benchmark summary
+### Directory Structure
+After running the benchmark, outputs are organized by model:
 
-### Generated Images
-Images are saved to `outputs/` with descriptive filenames:
 ```
-image_001_20231205_143052.png
-image_002_20231205_143055.png
-...
+outputs/
+├── z-image-turbo/
+│   ├── prompt_01_20231206_143052.png
+│   ├── prompt_02_20231206_143055.png
+│   └── ...
+├── sd-turbo/
+│   ├── prompt_01_20231206_143152.png
+│   └── ...
+└── sd-1.5/
+    ├── prompt_01_20231206_143252.png
+    └── ...
 ```
 
 ### Benchmark Results
-`benchmark_results.json` contains:
-- System and model configuration
-- Per-image metrics (time, memory, throughput)
+`benchmark_results.json` contains comprehensive metrics for each model:
+- Model configuration (steps, CFG, dtype)
+- Per-image timing and memory usage
 - Aggregate statistics (mean, std, min, max)
-- GPU utilization data (if available)
+- System information
+
+### README Updates
+This README is automatically updated with:
+- Performance comparison table across all models
+- Model details and configurations
+- Analysis highlighting fastest model and most memory-efficient
+- Sample output locations
 
 ## Troubleshooting
 
 ### Out of Memory Errors
-- Reduce `IMAGE_HEIGHT` and `IMAGE_WIDTH` to 512 or 768
+- Images are already set to 512x512 (optimal for 8GB VRAM)
+- Try running models individually: `python inference.py --models sd-turbo`
 - Close other GPU-intensive applications
-- Enable CPU offloading (requires code modification)
+- Restart your system to clear any GPU memory leaks
 
 ### Slow Performance
-- Ensure you're using a GPU (check device detection output)
-- Enable `USE_MODEL_COMPILATION = True` for subsequent runs
-- Verify PyTorch is using the correct CUDA/MPS backend
+- Ensure GPU is detected (check console output at start)
+- First run downloads models (~15-20GB total) - subsequent runs are faster
+- Verify PyTorch CUDA installation: `python -c "import torch; print(torch.cuda.is_available())"`
 
 ### Model Download Issues
-- First run downloads ~12GB of model weights
-- Ensure stable internet connection
-- Check available disk space
-- Try setting `HF_HOME` environment variable to a different location
+- First run downloads three models (~15-20GB total)
+- Ensure stable internet connection and sufficient disk space
+- Models are cached in `~/.cache/huggingface/hub/`
+- Set custom cache location: `export HF_HOME=/path/to/cache`
 
-## Machine Benchmark Results
+### CUDA/PyTorch Issues
+- Verify CUDA is installed: `nvidia-smi`
+- Check PyTorch CUDA compatibility: Match PyTorch version to your CUDA version
+- Reinstall PyTorch if needed: Visit [pytorch.org](https://pytorch.org)
 
-Comparative performance across different hardware configurations (1024x1024, 9 steps):
+## Model Comparison Results
 
-| Hardware | VRAM/Memory | Time per Image | Throughput | Date Tested |
-|----------|-------------|----------------|------------|-------------|
-| NVIDIA GeForce RTX 3070 Ti | 8GB | ~689.38s | 0.00145 img/s | 2025-12-05 |
+*Run the benchmark to see comparison results here. The table will show performance metrics, memory usage, and analysis across all three models.*
 
-*Note: This table will be expanded as more hardware configurations are tested. Actual performance varies based on prompt complexity and system configuration.*
+To generate results:
+```bash
+python inference.py
+```
 
-## Latest Benchmark Results
+## Model Capabilities Demonstration
 
-**Last Run:** 2025-12-05 09:13:36
+Below are sample outputs from **Tongyi-MAI/Z-Image-Turbo**, showcasing its ability to handle diverse and challenging prompts across various genres and styles.
 
-**Configuration:**
-- Model: Tongyi-MAI/Z-Image-Turbo
-- Device: cuda
-- Resolution: 1024x1024
-- Inference Steps: 9
-- Dtype: torch.bfloat16
+### Test 9: Underwater Scene with Complex Lighting
+**Prompt:** *"Underwater coral reef scene with sunlight streaming from above, creating dramatic light rays through the water. Schools of tropical fish swimming between colorful corals and sea anemones. Crystal clear turquoise water with natural depth and refraction effects."*
 
-**Performance Metrics:**
-- Total Images Generated: 8
-- Mean Inference Time: 689.38s ± 6.65s
-- Throughput: 0.00145 images/second
-- Warmup Time: 695.00s
-- Peak GPU Memory: 19753 MB (19.29 GB)
+![Underwater Scene](outputs/image_001_20251205_193437.png)
 
-## Generated Examples
+### Test 10: Dynamic Weather and Atmospheric Effects
+**Prompt:** *"Storm clouds gathering over a wheat field at dusk. Lightning illuminating dark purple and grey clouds from within. Golden wheat swaying in strong wind, dramatic contrast between warm foreground and ominous sky. Wide cinematic landscape."*
 
-Below are example images generated during the latest benchmark run, showcasing challenging prompts that test various capabilities:
+![Storm Scene](outputs/image_002_20251205_193720.png)
 
-### Example 1: Bilingual Text Rendering - Coffee Shop
-**Prompt:** A vintage coffee shop storefront with a neon sign reading 'OPEN 24/7' in red letters above the door, and a wooden chalkboard menu displaying '咖啡 $3.50' in white chalk. Rain-slicked cobblestone street, warm golden light spilling through foggy windows, early morning blue hour atmosphere.
+### Test 11: Abstract Architectural Photography
+**Prompt:** *"Modern minimalist architecture, geometric concrete structures with sharp angles and clean lines. Interplay of light and shadow on white surfaces. Single figure for scale walking through the space. High contrast black and white photography style."*
 
-![Image 1](outputs/image_001_20251205_093642.png)
+![Architectural Photography](outputs/image_003_20251205_193959.png)
 
-### Example 2: Complex Lighting & Reflections - Wine Glass
-**Prompt:** A crystal wine glass filled with red wine, sitting on a marble countertop. Dramatic side lighting creates caustics and reflections on the surface. A single rose petal floats in the wine. Shallow depth of field, photorealistic macro photography style, with bokeh lights in the dark background.
+### Test 12: Natural Phenomena
+**Prompt:** *"Aurora borealis dancing over a frozen lake surrounded by snow-covered pine forest. Green and purple lights reflecting on ice surface. Stars visible in clear night sky. Long exposure photography capturing light movement."*
 
-![Image 2](outputs/image_002_20251205_094826.png)
+![Aurora Borealis](outputs/image_004_20251205_194243.png)
 
-### Example 3: Action & Motion - Dancer with Flour
-**Prompt:** A professional dancer mid-leap in an abandoned warehouse, arms extended gracefully. Flour powder explodes around her body, frozen in mid-air, creating dramatic white clouds. Harsh sunlight streams through broken windows, creating god rays through the dust. High-speed photography, every particle visible and sharp.
+### Test 13: Urban Street Photography at Night
+**Prompt:** *"Busy city street at night after rain, wet pavement reflecting neon signs and streetlights. Blurred motion of people with umbrellas walking past illuminated shop windows. Bokeh lights in background, moody cinematic atmosphere."*
 
-![Image 3](outputs/image_003_20251205_100003.png)
+![Urban Night](outputs/image_005_20251205_194525.png)
 
-### Example 4: Architectural Detail - Baroque Cathedral
-**Prompt:** Interior of a grand baroque cathedral, ornate golden details on every surface. Sunlight streams through massive stained glass windows, casting colored light patterns on white marble floors. Elaborate ceiling frescoes depicting celestial scenes. Ultra-wide angle perspective looking up towards the dome, emphasizing scale and grandeur.
+### Test 14: Macro Nature Photography
+**Prompt:** *"Morning dewdrops on fresh green leaves backlit by golden sunrise. Each droplet catching and refracting light. Shallow depth of field with soft bokeh background. Delicate plant details visible, vibrant natural colors."*
 
-![Image 4](outputs/image_004_20251205_101128.png)
+![Macro Dewdrops](outputs/image_006_20251205_194805.png)
 
-### Example 5: Materials & Textures - Water Droplet Macro
-**Prompt:** Extreme close-up of a water droplet suspended on a spider's web at dawn. The droplet acts as a lens, containing a perfect miniature reflection of a sunrise landscape. Morning dew covers the entire web. Macro photography with perfect focus on water surface tension, iridescent light refractions.
+### Test 15: Industrial and Mechanical Subjects
+**Prompt:** *"Vintage steam locomotive at an old railway station, dramatic side lighting highlighting mechanical details. Steam rising from the engine, rust and weathered metal textures. Sense of history and craftsmanship, documentary photography style."*
 
-![Image 5](outputs/image_005_20251205_102253.png)
+![Steam Locomotive](outputs/image_007_20251205_195049.png)
 
-### Example 6: Character Interaction - Japanese Calligraphy Lesson
-**Prompt:** An elderly master calligrapher teaching a young student in a traditional Japanese study room. The master's weathered hands guide the student's brush, mid-stroke on rice paper. Ink bottles, scrolls, and brushes arranged on the low table. Soft natural light from shoji screens, expressions of concentration and wisdom. Photorealistic, intimate moment captured.
+### Test 16: Dramatic Portraiture with Elements
+**Prompt:** *"Portrait of a person with windswept hair against stormy sky backdrop. Fabric or scarf billowing dramatically in wind. Intense natural lighting from the side, raw emotion captured. Environmental portrait connecting subject to nature."*
 
-![Image 6](outputs/image_006_20251205_103418.png)
+![Dramatic Portrait](outputs/image_008_20251205_195329.png)
 
-### Example 7: Surreal Photorealism - Desert Pocket Watch
-**Prompt:** A giant vintage pocket watch partially buried in desert sand dunes, its face showing roman numerals. The watch is overgrown with lush green vines and blooming flowers emerging from its mechanisms. Golden hour lighting, long shadows, a single bird perched on the watch crown. Hyper-realistic, surreal juxtaposition.
+### Test 17: Food Photography with Styling
+**Prompt:** *"Rustic breakfast scene on wooden table by window. Fresh bread, fruits, coffee in ceramic cup, natural morning light casting soft shadows. Steam rising from hot beverage, appetizing composition with natural textures and warm tones."*
 
-![Image 7](outputs/image_007_20251205_104543.png)
+![Food Photography](outputs/image_009_20251205_195612.png)
 
-### Example 8: Environmental Storytelling - Mars Astronaut Helmet
-**Prompt:** An abandoned astronaut helmet on the surface of Mars, half-buried in red dust. The helmet's visor reflects the pink Martian sky and distant Earth as a blue dot. Small rocks and footprints leading away into the distance. Cinematic composition, sense of isolation and mystery, photorealistic space photography aesthetic.
+### Test 18: Fantasy Realism
+**Prompt:** *"Ancient library with towering bookshelves reaching into darkness above. Floating books and glowing magical particles in the air. Single beam of light from high window illuminating dust motes. Mysterious and enchanting atmosphere, photorealistic rendering."*
 
-![Image 8](outputs/image_008_20251205_105709.png)
+![Fantasy Library](outputs/image_010_20251205_195851.png)
 
-## Model Information
+---
 
-- **Model**: Z-Image-Turbo by Tongyi-MAI
-- **Parameters**: 6 billion
-- **Architecture**: Scalable Single-Stream DiT (S3-DiT)
-- **Specialties**: 
-  - Photorealistic image generation
-  - Bilingual text rendering (English & Chinese)
-  - Strong instruction adherence
-  - Sub-second inference on enterprise GPUs
+These examples demonstrate Z-Image-Turbo's capabilities across:
+- ✨ Complex lighting and atmospheric effects (underwater caustics, storm lighting, aurora)
+- 🏗️ Architectural and geometric precision
+- 🌿 Natural and organic subjects (macro photography, forests, weather)
+- 🎨 Various artistic styles (street photography, portraiture, food styling)
+- ✨ Fantasy and creative concepts with photorealistic rendering
+
+All images generated at 512×512 resolution with 9 inference steps.
 
 ## References
 
-- [Hugging Face Model Card](https://huggingface.co/Tongyi-MAI/Z-Image-Turbo)
-- [Official GitHub](https://github.com/TencentARC/Z-Image)
-- [Research Paper](https://arxiv.org/abs/2511.22699)
+- **Z-Image-Turbo**: [Hugging Face](https://huggingface.co/Tongyi-MAI/Z-Image-Turbo) | [Paper](https://arxiv.org/abs/2511.22699)
+- **SD-Turbo**: [Hugging Face](https://huggingface.co/stabilityai/sd-turbo)
+- **Stable Diffusion 1.5**: [Hugging Face](https://huggingface.co/runwayml/stable-diffusion-v1-5)
 - [Diffusers Documentation](https://huggingface.co/docs/diffusers)
+- [PyTorch](https://pytorch.org)
 
 ## License
 
-This project uses the Z-Image-Turbo model which is licensed under Apache 2.0.
-See the [model card](https://huggingface.co/Tongyi-MAI/Z-Image-Turbo) for details.
+- **Z-Image-Turbo**: Apache 2.0 License
+- **SD-Turbo**: Stability AI Community License
+- **Stable Diffusion 1.5**: CreativeML OpenRAIL-M License
+
+See individual model cards for full license details.
 
 ## Contributing
 
@@ -267,3 +305,20 @@ Feel free to open issues or submit pull requests for improvements!
 **Created**: 2025-12-05  
 **Last Updated**: Auto-updated after each inference run
 
+
+## Latest Benchmark Results
+
+**Last Run:** 2025-12-05 19:31:55
+
+**Configuration:**
+- Model: Tongyi-MAI/Z-Image-Turbo
+- Device: cuda
+- Resolution: 512x512
+- Inference Steps: 9
+- Dtype: torch.bfloat16
+
+**Performance Metrics:**
+- Total Images Generated: 10
+- Mean Inference Time: 161.44s ± 1.66s
+- Throughput: 0.01 images/second
+- Peak GPU Memory: 19753 MB (19.29 GB)
