@@ -9,11 +9,9 @@ from typing import Dict, Any, Optional
 # ============================================================================
 
 DEFAULT_PROMPTS = [
-    "Futuristic cityscape in heavy rain at night with neon reflections",
-    "Ancient forest with bioluminescent plants and drifting fog",
-    "Underwater research base with divers and service robots",
-    "Abstract geometric sculpture made of glass, smoke, and colored light",
-    "Snowy mountain village at dawn beneath an aurora",
+    "A weathered elderly fisherman mending nets on a wooden dock at golden hour, deep wrinkles on his face, wearing a faded blue sweater, seagulls flying overhead, photorealistic",
+    "A young ballet dancer mid-leap in an abandoned cathedral with shattered stained glass windows, dramatic side lighting casting long shadows, dust particles floating in light beams",
+    "A random image",
 ]
 
 # ============================================================================
@@ -22,7 +20,7 @@ DEFAULT_PROMPTS = [
 
 DEFAULT_HEIGHT = 512
 DEFAULT_WIDTH = 512
-DEFAULT_SEED = 42  # Default seed for reproducibility; use None for random
+DEFAULT_SEED = 19  # Default seed for reproducibility; use None for random
 OUTPUT_DIR = "comparison_results"
 BENCHMARKS_DIR = "benchmarks"
 
