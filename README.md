@@ -222,52 +222,52 @@ Below are sample outputs from **Tongyi-MAI/Z-Image-Turbo**, showcasing its abili
 ### Test 9: Underwater Scene with Complex Lighting
 **Prompt:** *"Underwater coral reef scene with sunlight streaming from above, creating dramatic light rays through the water. Schools of tropical fish swimming between colorful corals and sea anemones. Crystal clear turquoise water with natural depth and refraction effects."*
 
-![Underwater Scene](outputs/image_001_20251205_193437.png)
+![Underwater Scene](Z-Image-Turbo-outputs-png/image_001_20251205_193437.png)
 
 ### Test 10: Dynamic Weather and Atmospheric Effects
 **Prompt:** *"Storm clouds gathering over a wheat field at dusk. Lightning illuminating dark purple and grey clouds from within. Golden wheat swaying in strong wind, dramatic contrast between warm foreground and ominous sky. Wide cinematic landscape."*
 
-![Storm Scene](outputs/image_002_20251205_193720.png)
+![Storm Scene](Z-Image-Turbo-outputs-png/image_002_20251205_193720.png)
 
 ### Test 11: Abstract Architectural Photography
 **Prompt:** *"Modern minimalist architecture, geometric concrete structures with sharp angles and clean lines. Interplay of light and shadow on white surfaces. Single figure for scale walking through the space. High contrast black and white photography style."*
 
-![Architectural Photography](outputs/image_003_20251205_193959.png)
+![Architectural Photography](Z-Image-Turbo-outputs-png/image_003_20251205_193959.png)
 
 ### Test 12: Natural Phenomena
 **Prompt:** *"Aurora borealis dancing over a frozen lake surrounded by snow-covered pine forest. Green and purple lights reflecting on ice surface. Stars visible in clear night sky. Long exposure photography capturing light movement."*
 
-![Aurora Borealis](outputs/image_004_20251205_194243.png)
+![Aurora Borealis](Z-Image-Turbo-outputs-png/image_004_20251205_194243.png)
 
 ### Test 13: Urban Street Photography at Night
 **Prompt:** *"Busy city street at night after rain, wet pavement reflecting neon signs and streetlights. Blurred motion of people with umbrellas walking past illuminated shop windows. Bokeh lights in background, moody cinematic atmosphere."*
 
-![Urban Night](outputs/image_005_20251205_194525.png)
+![Urban Night](Z-Image-Turbo-outputs-png/image_005_20251205_194525.png)
 
 ### Test 14: Macro Nature Photography
 **Prompt:** *"Morning dewdrops on fresh green leaves backlit by golden sunrise. Each droplet catching and refracting light. Shallow depth of field with soft bokeh background. Delicate plant details visible, vibrant natural colors."*
 
-![Macro Dewdrops](outputs/image_006_20251205_194805.png)
+![Macro Dewdrops](Z-Image-Turbo-outputs-png/image_006_20251205_194805.png)
 
 ### Test 15: Industrial and Mechanical Subjects
 **Prompt:** *"Vintage steam locomotive at an old railway station, dramatic side lighting highlighting mechanical details. Steam rising from the engine, rust and weathered metal textures. Sense of history and craftsmanship, documentary photography style."*
 
-![Steam Locomotive](outputs/image_007_20251205_195049.png)
+![Steam Locomotive](Z-Image-Turbo-outputs-png/image_007_20251205_195049.png)
 
 ### Test 16: Dramatic Portraiture with Elements
 **Prompt:** *"Portrait of a person with windswept hair against stormy sky backdrop. Fabric or scarf billowing dramatically in wind. Intense natural lighting from the side, raw emotion captured. Environmental portrait connecting subject to nature."*
 
-![Dramatic Portrait](outputs/image_008_20251205_195329.png)
+![Dramatic Portrait](Z-Image-Turbo-outputs-png/image_008_20251205_195329.png)
 
 ### Test 17: Food Photography with Styling
 **Prompt:** *"Rustic breakfast scene on wooden table by window. Fresh bread, fruits, coffee in ceramic cup, natural morning light casting soft shadows. Steam rising from hot beverage, appetizing composition with natural textures and warm tones."*
 
-![Food Photography](outputs/image_009_20251205_195612.png)
+![Food Photography](Z-Image-Turbo-outputs-png/image_009_20251205_195612.png)
 
 ### Test 18: Fantasy Realism
 **Prompt:** *"Ancient library with towering bookshelves reaching into darkness above. Floating books and glowing magical particles in the air. Single beam of light from high window illuminating dust motes. Mysterious and enchanting atmosphere, photorealistic rendering."*
 
-![Fantasy Library](outputs/image_010_20251205_195851.png)
+![Fantasy Library](Z-Image-Turbo-outputs-png/image_010_20251205_195851.png)
 
 ---
 
