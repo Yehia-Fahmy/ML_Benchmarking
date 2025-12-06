@@ -1,50 +1,43 @@
 # Multi-Model Image Generation Benchmark
 
-A comprehensive benchmarking suite comparing popular text-to-image models: [Z-Image-Turbo](https://huggingface.co/Tongyi-MAI/Z-Image-Turbo), [SD-Turbo](https://huggingface.co/stabilityai/sd-turbo), [Stable Diffusion 1.5](https://huggingface.co/runwayml/stable-diffusion-v1-5), and [STARFlow](https://huggingface.co/apple/starflow).
+A modular benchmarking suite comparing popular text-to-image models: [Z-Image-Turbo](https://huggingface.co/Tongyi-MAI/Z-Image-Turbo), [SD-Turbo](https://huggingface.co/stabilityai/sd-turbo), [Stable Diffusion 1.5](https://huggingface.co/runwayml/stable-diffusion-v1-5), and [STARFlow](https://huggingface.co/apple/starflow).
 
 ## Features
 
-- **Multi-Model Comparison**: Benchmark Z-Image-Turbo, SD-Turbo, SD 1.5, and STARFlow side-by-side
-- **Intelligent GPU Detection**: Automatically detects and uses NVIDIA CUDA, Apple MPS (M1/M2/M3), or falls back to CPU
-- **Optimized for 8GB VRAM**: Memory-efficient settings perfect for RTX 3070 Ti and similar GPUs
-- **Comprehensive Benchmarking**: Tracks inference time, memory usage, and throughput per model
-- **Challenging Test Prompts**: 5 carefully selected prompts testing diverse generation capabilities
-- **Aggressive Memory Management**: Proper cleanup between models for stable multi-model runs
-- **Automatic Result Export**: Saves benchmark data to JSON and updates this README with comparison tables
-- **STARFlow Support**: Dedicated script for Apple's transformer autoregressive flow model
+- **Per-Model Scripts**: Run each model independently with full CLI control
+- **Master Orchestrator**: Run multiple models with shared parameters in one command
+- **CUDA-Optimized**: Designed specifically for NVIDIA GPUs with automatic optimizations
+- **Comprehensive Benchmarking**: Tracks inference time, memory usage, and throughput
+- **Robust Error Handling**: Graceful failure with dimension validation per model
+- **Reproducible Results**: Consistent seeds across all models for fair comparison
+- **JSON Export**: Detailed benchmark data for analysis
 
 ## System Requirements
 
-### Minimum Requirements
+### Required
 - Python 3.8 or higher
+- **NVIDIA GPU with CUDA support** (8GB+ VRAM recommended)
 - 16GB RAM
-- 20GB disk space for model weights (all three models combined)
-
-### GPU Requirements
-- **Recommended**: NVIDIA GPU with 8GB+ VRAM (e.g., RTX 3070 Ti, RTX 3080, RTX 4070)
-  - All three models tested at 512x512 resolution
-  - Memory-efficient optimizations enabled (attention slicing, VAE tiling)
-- **Apple Silicon**: M1/M2/M3 with 16GB+ unified memory
-- **Note**: CPU inference is supported but will be significantly slower
+- 20GB disk space for model weights
 
 ### VRAM Guidance for 512x512 Images
-- **Z-Image-Turbo**: ~6-8 GB peak
+- **Z-Image-Turbo**: ~6-8 GB peak (6B parameter model)
 - **SD-Turbo**: ~4-6 GB peak
 - **Stable Diffusion 1.5**: ~4-6 GB peak
-
-The benchmark script includes aggressive memory cleanup between models, making it safe to run all three sequentially on 8GB GPUs.
+- **STARFlow**: ~6 GB peak (256x256 only)
 
 ## Installation
 
-1. **Clone or download this repository:**
+1. **Clone the repository:**
    ```bash
-   cd /home/yehia/image_gen_local
+   git clone <repository-url>
+   cd ML_Benchmarking
    ```
 
-2. **Create a virtual environment (recommended):**
+2. **Create a virtual environment:**
    ```bash
    python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   source venv/bin/activate
    ```
 
 3. **Install dependencies:**
@@ -52,214 +45,184 @@ The benchmark script includes aggressive memory cleanup between models, making i
    pip install -r requirements.txt
    ```
 
-   This will install:
-   - `diffusers` (from GitHub source for Z-Image support)
-   - PyTorch and related packages
-   - Performance monitoring tools (psutil)
-   - Image processing libraries
-
-4. **Optional: Install GPUtil for NVIDIA GPU monitoring:**
+4. **Verify CUDA is available:**
    ```bash
-   pip install gputil
+   python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"
    ```
 
 ## Usage
 
-### Quick Start - Benchmark All Models
-
-Run the complete benchmark comparing all three models:
+### Quick Start - Run All Models
 
 ```bash
-python inference.py
+python run_all.py
 ```
 
-This will:
-1. Detect your GPU/device automatically
-2. Load each model sequentially (Z-Image-Turbo, SD-Turbo, SD 1.5)
-3. Generate 5 test images per model (15 total images)
-4. Save images to `comparison results/[model-name]/`
-5. Record performance metrics to `benchmark_results.json`
-6. Update this README with a comparison table
+This will benchmark all models with default settings (5 prompts, seed 42, 512x512).
 
-### Benchmark Individual Models
-
-Run specific models only:
+### Run Specific Models
 
 ```bash
-# Benchmark only Z-Image-Turbo
-python inference.py --models z-image-turbo
+# Run only SD-Turbo and SD 1.5
+python run_all.py --models sd-turbo sd-1.5
 
-# Benchmark SD-Turbo and SD 1.5
-python inference.py --models sd-turbo sd-1.5
-
-# All models (same as no arguments)
-python inference.py --models all
+# Run Z-Image-Turbo only
+python run_all.py --models z-image-turbo
 ```
 
-### Available Models
-
-- `z-image-turbo`: Tongyi-MAI Z-Image-Turbo (6B params, 9 steps, CFG=0)
-- `sd-turbo`: Stability AI SD-Turbo (distilled, 4 steps, CFG=0)
-- `sd-1.5`: Stable Diffusion 1.5 (classic baseline, 25 steps, CFG=7.5)
-
-### STARFlow Benchmark (Separate Script)
-
-To test Apple's STARFlow model:
+### Custom Parameters
 
 ```bash
-python test_starflow.py --seed 12
+# Custom seed and resolution
+python run_all.py --seed 123 --height 768 --width 768
+
+# Custom prompts
+python run_all.py --prompts "a beautiful sunset" "a cyberpunk city"
 ```
 
-See [STARFLOW_README.md](STARFLOW_README.md) for detailed documentation on the STARFlow benchmark script.
+### Individual Model Scripts
 
-Key features:
-- Automatic model download and setup
-- Tests with 3 challenging prompts + 1 random generation
-- Configurable seed (default: 12)
-- Comprehensive performance metrics
-- GPU memory tracking
+Each model has its own standalone script with full CLI control:
 
-### Test Prompts
+```bash
+# SD-Turbo
+python sd_turbo.py --seed 42 --height 512 --width 512
 
-The benchmark uses 5 challenging prompts designed to test different capabilities:
+# Stable Diffusion 1.5
+python sd_1_5.py --seed 42 --steps 30 --cfg 7.5
 
-1. Futuristic cityscape in heavy rain at night with neon reflections
-2. Ancient forest with bioluminescent plants and drifting fog
-3. Underwater research base with divers and service robots
-4. Abstract geometric sculpture made of glass, smoke, and colored light
-5. Snowy mountain village at dawn beneath an aurora
+# Z-Image-Turbo
+python z_image_turbo.py --seed 42
 
-All images are generated at **512x512** resolution with **random seeds** for diverse outputs.
-
-### Configuration Options
-
-To modify prompts or settings, edit the configuration section in `inference.py`:
-
-```python
-# Test prompts
-PROMPTS = [
-    "Your custom prompt 1",
-    "Your custom prompt 2",
-    # Add more...
-]
-
-# Generation settings
-IMAGE_HEIGHT = 512  # Recommended for 8GB VRAM
-IMAGE_WIDTH = 512
-SEED = None  # None for random, or set integer for reproducible results
+# STARFlow (256x256 only)
+python starflow_t2i.py --seed 42 --cfg 3.6
 ```
 
-Model-specific settings (steps, CFG) are automatically configured per model but can be customized in `MODEL_CONFIGS` dictionary.
+### CLI Options
 
-## Memory Optimization Features
+All scripts support these common arguments:
 
-The benchmark script includes several optimizations for stable operation on 8GB GPUs:
+| Argument | Description | Default |
+|----------|-------------|---------|
+| `--prompts` | Custom prompts (space-separated) | Built-in test prompts |
+| `--seed` | Random seed for reproducibility | 42 |
+| `--height` | Image height | 512 |
+| `--width` | Image width | 512 |
+| `--output_dir` | Output directory | `comparison_results` |
+| `--save_json` | JSON output file | `{model}_benchmark.json` |
 
-### Automatic Optimizations (CUDA)
-- **Attention Slicing**: Reduces memory usage during attention computation
-- **VAE Slicing**: Splits VAE operations into smaller chunks
-- **VAE Tiling**: Processes images in tiles to reduce peak memory
-- **Aggressive Cleanup**: Clears CUDA cache and runs garbage collection between models
+Model-specific options:
+- `--steps`: Override inference steps
+- `--cfg`: Override guidance scale
+- `--starflow_cfg`: CFG scale for STARFlow (run_all.py only)
 
-### Memory Tips
-- **512x512 is optimal** for 8GB VRAM when running all three models
-- **Close other GPU applications** before running the benchmark
-- **Run models individually** if experiencing OOM: `--models z-image-turbo`
-- The script automatically synchronizes CUDA operations for accurate memory tracking
+## Available Models
 
-## Understanding the Output
+| Model | Script | Steps | CFG | Resolution | Notes |
+|-------|--------|-------|-----|------------|-------|
+| Z-Image-Turbo | `z_image_turbo.py` | 9 | 0.0 | 256-1024 | 6B params, DiT |
+| SD-Turbo | `sd_turbo.py` | 4 | 0.0 | 256-768 | Distilled SD 1.5 |
+| SD 1.5 | `sd_1_5.py` | 25 | 7.5 | 256-768 | Classic baseline |
+| STARFlow | `starflow_t2i.py` | N/A | 3.6 | 256 only | Apple's flow model |
 
-### Directory Structure
-After running the benchmark, outputs are organized by model:
+## Project Structure
 
 ```
-comparison results/
-├── z-image-turbo/
-│   ├── prompt_01_20251205_201729.png
-│   ├── prompt_02_20251205_202022.png
-│   └── ...
+ML_Benchmarking/
+├── run_all.py           # Master orchestrator script
+├── sd_turbo.py          # SD-Turbo standalone script
+├── sd_1_5.py            # SD 1.5 standalone script
+├── z_image_turbo.py     # Z-Image-Turbo standalone script
+├── starflow_t2i.py      # STARFlow standalone script
+├── utils/               # Shared utilities
+│   ├── __init__.py
+│   ├── config.py        # Model configurations
+│   ├── device.py        # CUDA detection
+│   ├── benchmark.py     # Benchmarking utilities
+│   ├── validation.py    # Dimension/optimization validation
+│   └── export.py        # JSON/summary export
+├── comparison_results/  # Generated images
+├── requirements.txt
+└── README.md
+```
+
+## Output Structure
+
+```
+comparison_results/
 ├── sd-turbo/
-│   ├── prompt_01_20251205_203352.png
-│   └── ...
-└── sd-1.5/
-    ├── prompt_01_20251205_204139.png
-    └── ...
+│   └── baseline/
+│       ├── prompt_01_seed_42.png
+│       ├── prompt_02_seed_42.png
+│       └── ...
+├── sd-1.5/
+│   └── baseline/
+│       └── ...
+├── z-image-turbo/
+│   └── baseline/
+│       └── ...
+└── starflow-t2i/
+    └── baseline/
+        └── ...
 ```
 
-### Benchmark Results
-`benchmark_results.json` contains comprehensive metrics for each model:
-- Model configuration (steps, CFG, dtype)
-- Per-image timing and memory usage
-- Aggregate statistics (mean, std, min, max)
-- System information
+## Benchmark Results
 
-### README Updates
-This README is automatically updated with:
-- Performance comparison table across all models
-- Model details and configurations
-- Analysis highlighting fastest model and most memory-efficient
-- Sample output locations
+Results are saved as JSON files with comprehensive metrics:
+
+```json
+{
+  "model_name": "sd-turbo",
+  "config": {
+    "height": 512,
+    "width": 512,
+    "num_inference_steps": 4,
+    "guidance_scale": 0.0,
+    "seed": 42
+  },
+  "summary": {
+    "total_images": 5,
+    "successful_images": 5,
+    "mean_time_seconds": 2.5,
+    "peak_gpu_memory_mb": 4500
+  },
+  "generations": [...]
+}
+```
+
+## Memory Optimizations
+
+The suite automatically applies these optimizations for CUDA GPUs:
+- **Attention Slicing**: Reduces memory during attention computation
+- **VAE Slicing**: Splits VAE operations into smaller chunks
+- **VAE Tiling**: Processes images in tiles
+
+These are applied per-model based on what each model supports.
 
 ## Troubleshooting
 
-### Out of Memory Errors
-- Images are already set to 512x512 (optimal for 8GB VRAM)
-- Try running models individually: `python inference.py --models sd-turbo`
-- Close other GPU-intensive applications
-- Restart your system to clear any GPU memory leaks
+### "CUDA GPU required but not available"
+- Ensure you have an NVIDIA GPU with CUDA support
+- Install NVIDIA drivers: `nvidia-smi` should work
+- Install PyTorch with CUDA: Visit [pytorch.org](https://pytorch.org)
 
-### Slow Performance
-- Ensure GPU is detected (check console output at start)
-- First run downloads models (~15-20GB total) - subsequent runs are faster
-- Verify PyTorch CUDA installation: `python -c "import torch; print(torch.cuda.is_available())"`
+### Out of Memory Errors
+- Reduce resolution: `--height 256 --width 256`
+- Run models individually instead of all at once
+- Close other GPU-intensive applications
+
+### STARFlow Setup
+STARFlow requires additional setup:
+1. Run `python starflow_t2i.py` once to clone the repository
+2. The checkpoint (~6GB) will be downloaded automatically
+3. Ensure `ml-starflow/` directory exists with checkpoint
 
 ### Model Download Issues
-- First run downloads three models (~15-20GB total)
-- Ensure stable internet connection and sufficient disk space
-- Models are cached in `~/.cache/huggingface/hub/`
-- Set custom cache location: `export HF_HOME=/path/to/cache`
+- First run downloads models (~15-20GB total)
+- Ensure stable internet and sufficient disk space
+- Models cached in `~/.cache/huggingface/hub/`
 
-### CUDA/PyTorch Issues
-- Verify CUDA is installed: `nvidia-smi`
-- Check PyTorch CUDA compatibility: Match PyTorch version to your CUDA version
-- Reinstall PyTorch if needed: Visit [pytorch.org](https://pytorch.org)
-
-## Model Comparison Results
-
-**Last Run:** 2025-12-05 20:41:51
-
-**Test Configuration:**
-- Resolution: 512x512
-- Number of Prompts: 5
-- Seed: Random (different for each generation)
-- Hardware: NVIDIA GeForce RTX 3070 Ti
-
-### Performance Comparison
-
-| Model | Steps | CFG | Mean Time/Image | Throughput | Peak GPU Memory |
-|-------|-------|-----|-----------------|------------|-----------------|
-| z-image-turbo | 9 | 0.0 | 161.20s ± 23.46s | 0.006 img/s | 19.29 GB |
-| sd-turbo | 4 | 0.0 | 7.71s ± 0.09s | 0.130 img/s | 9.25 GB |
-| sd-1.5 | 25 | 7.5 | 4.04s ± 3.02s | 0.248 img/s | 2.60 GB |
-
-### Model Details
-
-**z-image-turbo** (Tongyi-MAI/Z-Image-Turbo)
-- 6B parameter Turbo DiT model
-- Inference steps: 9
-- Guidance scale: 0.0
-
-**sd-turbo** (stabilityai/sd-turbo)
-- Distilled SD 1.5 for speed
-- Inference steps: 4
-- Guidance scale: 0.0
-
-**sd-1.5** (runwayml/stable-diffusion-v1-5)
-- Classic SD 1.5 baseline
-- Inference steps: 25
-- Guidance scale: 7.5
-
-### Test Prompts
+## Default Test Prompts
 
 1. Futuristic cityscape in heavy rain at night with neon reflections
 2. Ancient forest with bioluminescent plants and drifting fog
@@ -267,59 +230,10 @@ This README is automatically updated with:
 4. Abstract geometric sculpture made of glass, smoke, and colored light
 5. Snowy mountain village at dawn beneath an aurora
 
-### Sample Outputs
+## License
 
-Images are organized in the `comparison results/` directory by model name. Each model generated images for all test prompts.
-
-**z-image-turbo**: `comparison results/z-image-turbo/`
-**sd-turbo**: `comparison results/sd-turbo/`
-**sd-1.5**: `comparison results/sd-1.5/`
-
-## Visual Comparison Results
-
-This section displays side-by-side comparisons of all three models (Z-Image-Turbo, SD-Turbo, and SD 1.5) for each test prompt, allowing you to visually compare their outputs.
-
-### Prompt 1: Futuristic Cityscape
-**Prompt:** Futuristic cityscape in heavy rain at night with neon reflections
-
-| Z-Image-Turbo | SD-Turbo | SD 1.5 |
-|---------------|----------|--------|
-| ![Z-Image-Turbo](comparison%20results/z-image-turbo/prompt_01_20251205_201729.png) | ![SD-Turbo](comparison%20results/sd-turbo/prompt_01_20251205_203352.png) | ![SD-1.5](comparison%20results/sd-1.5/prompt_01_20251205_204139.png) |
-
-### Prompt 2: Ancient Forest
-**Prompt:** Ancient forest with bioluminescent plants and drifting fog
-
-| Z-Image-Turbo | SD-Turbo | SD 1.5 |
-|---------------|----------|--------|
-| ![Z-Image-Turbo](comparison%20results/z-image-turbo/prompt_02_20251205_202022.png) | ![SD-Turbo](comparison%20results/sd-turbo/prompt_02_20251205_203359.png) | ![SD-1.5](comparison%20results/sd-1.5/prompt_02_20251205_204141.png) |
-
-### Prompt 3: Underwater Research Base
-**Prompt:** Underwater research base with divers and service robots
-
-| Z-Image-Turbo | SD-Turbo | SD 1.5 |
-|---------------|----------|--------|
-| ![Z-Image-Turbo](comparison%20results/z-image-turbo/prompt_03_20251205_202316.png) | ![SD-Turbo](comparison%20results/sd-turbo/prompt_03_20251205_203407.png) | ![SD-1.5](comparison%20results/sd-1.5/prompt_03_20251205_204144.png) |
-
-### Prompt 4: Abstract Geometric Sculpture
-**Prompt:** Abstract geometric sculpture made of glass, smoke, and colored light
-
-| Z-Image-Turbo | SD-Turbo | SD 1.5 |
-|---------------|----------|--------|
-| ![Z-Image-Turbo](comparison%20results/z-image-turbo/prompt_04_20251205_202607.png) | ![SD-Turbo](comparison%20results/sd-turbo/prompt_04_20251205_203415.png) | ![SD-1.5](comparison%20results/sd-1.5/prompt_04_20251205_204146.png) |
-
-### Prompt 5: Snowy Mountain Village
-**Prompt:** Snowy mountain village at dawn beneath an aurora
-
-| Z-Image-Turbo | SD-Turbo | SD 1.5 |
-|---------------|----------|--------|
-| ![Z-Image-Turbo](comparison%20results/z-image-turbo/prompt_05_20251205_202802.png) | ![SD-Turbo](comparison%20results/sd-turbo/prompt_05_20251205_203423.png) | ![SD-1.5](comparison%20results/sd-1.5/prompt_05_20251205_204149.png) |
-
-### Analysis
-
-- **Fastest Model**: sd-1.5 (4.04s avg per image)
-- **Most Memory Efficient**: sd-1.5 (2.60 GB peak)
-
-## Z-Image-Turbo Extended Visual Results
-
-For detailed visual results showcasing Z-Image-Turbo's capabilities across diverse photographic styles and scenarios, see [Z-Image-Turbo Visual Results](Z-Image-Turbo-Visual-Results.md).
-
+See individual model licenses:
+- [Z-Image-Turbo](https://huggingface.co/Tongyi-MAI/Z-Image-Turbo)
+- [SD-Turbo](https://huggingface.co/stabilityai/sd-turbo)
+- [Stable Diffusion 1.5](https://huggingface.co/runwayml/stable-diffusion-v1-5)
+- [STARFlow](https://huggingface.co/apple/starflow)
