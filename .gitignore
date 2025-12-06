@@ -11,13 +11,13 @@ ENV/
 
 # Output files
 outputs/
-benchmark_results.json
-assets
+benchmarks/
+*.benchmark.json
+assets/
 
 # Model cache
 .cache/
 huggingface/
-utils
 
 # IDE
 .vscode/
