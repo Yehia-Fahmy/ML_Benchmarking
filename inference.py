@@ -20,40 +20,40 @@ from PIL import Image
 # ============================================================================
 
 PROMPTS = [
-    # Original prompts
-    "Young Chinese woman in red Hanfu, intricate embroidery. Impeccable makeup, red floral forehead pattern. Elaborate high bun, golden phoenix headdress, red flowers, beads. Holds round folding fan with lady, trees, bird. Neon lightning-bolt lamp (⚡️), bright yellow glow, above extended left palm. Soft-lit outdoor night background, silhouetted tiered pagoda (西安大雁塔), blurred colorful distant lights.",
-    "A serene mountain landscape at sunset, with golden light reflecting off a crystal clear lake, surrounded by pine trees and snow-capped peaks in the distance.",
-    "A futuristic cityscape at night with neon lights, flying vehicles, and holographic advertisements in a cyberpunk style.",
+    # Test 9: Underwater scene with complex lighting
+    "Underwater coral reef scene with sunlight streaming from above, creating dramatic light rays through the water. Schools of tropical fish swimming between colorful corals and sea anemones. Crystal clear turquoise water with natural depth and refraction effects.",
     
-    # Challenging new prompts
-    # Test 1: Bilingual text rendering with complex scene
-    "A vintage coffee shop storefront with a neon sign reading 'OPEN 24/7' in red letters above the door, and a wooden chalkboard menu displaying '咖啡 $3.50' in white chalk. Rain-slicked cobblestone street, warm golden light spilling through foggy windows, early morning blue hour atmosphere.",
+    # Test 10: Dynamic weather and atmospheric effects
+    "Storm clouds gathering over a wheat field at dusk. Lightning illuminating dark purple and grey clouds from within. Golden wheat swaying in strong wind, dramatic contrast between warm foreground and ominous sky. Wide cinematic landscape.",
     
-    # Test 2: Complex lighting and reflections
-    "A crystal wine glass filled with red wine, sitting on a marble countertop. Dramatic side lighting creates caustics and reflections on the surface. A single rose petal floats in the wine. Shallow depth of field, photorealistic macro photography style, with bokeh lights in the dark background.",
+    # Test 11: Abstract architectural photography
+    "Modern minimalist architecture, geometric concrete structures with sharp angles and clean lines. Interplay of light and shadow on white surfaces. Single figure for scale walking through the space. High contrast black and white photography style.",
     
-    # Test 3: Action and motion with particles
-    "A professional dancer mid-leap in an abandoned warehouse, arms extended gracefully. Flour powder explodes around her body, frozen in mid-air, creating dramatic white clouds. Harsh sunlight streams through broken windows, creating god rays through the dust. High-speed photography, every particle visible and sharp.",
+    # Test 12: Natural phenomena
+    "Aurora borealis dancing over a frozen lake surrounded by snow-covered pine forest. Green and purple lights reflecting on ice surface. Stars visible in clear night sky. Long exposure photography capturing light movement.",
     
-    # Test 4: Intricate architectural detail
-    "Interior of a grand baroque cathedral, ornate golden details on every surface. Sunlight streams through massive stained glass windows, casting colored light patterns on white marble floors. Elaborate ceiling frescoes depicting celestial scenes. Ultra-wide angle perspective looking up towards the dome, emphasizing scale and grandeur.",
+    # Test 13: Urban street photography at night
+    "Busy city street at night after rain, wet pavement reflecting neon signs and streetlights. Blurred motion of people with umbrellas walking past illuminated shop windows. Bokeh lights in background, moody cinematic atmosphere.",
     
-    # Test 5: Challenging materials and textures
-    "Extreme close-up of a water droplet suspended on a spider's web at dawn. The droplet acts as a lens, containing a perfect miniature reflection of a sunrise landscape. Morning dew covers the entire web. Macro photography with perfect focus on water surface tension, iridescent light refractions.",
+    # Test 14: Macro nature photography
+    "Morning dewdrops on fresh green leaves backlit by golden sunrise. Each droplet catching and refracting light. Shallow depth of field with soft bokeh background. Delicate plant details visible, vibrant natural colors.",
     
-    # Test 6: Complex character interaction with emotion
-    "An elderly master calligrapher teaching a young student in a traditional Japanese study room. The master's weathered hands guide the student's brush, mid-stroke on rice paper. Ink bottles, scrolls, and brushes arranged on the low table. Soft natural light from shoji screens, expressions of concentration and wisdom. Photorealistic, intimate moment captured.",
+    # Test 15: Industrial and mechanical subjects
+    "Vintage steam locomotive at an old railway station, dramatic side lighting highlighting mechanical details. Steam rising from the engine, rust and weathered metal textures. Sense of history and craftsmanship, documentary photography style.",
     
-    # Test 7: Surreal but photorealistic
-    "A giant vintage pocket watch partially buried in desert sand dunes, its face showing roman numerals. The watch is overgrown with lush green vines and blooming flowers emerging from its mechanisms. Golden hour lighting, long shadows, a single bird perched on the watch crown. Hyper-realistic, surreal juxtaposition.",
+    # Test 16: Dramatic portraiture with elements
+    "Portrait of a person with windswept hair against stormy sky backdrop. Fabric or scarf billowing dramatically in wind. Intense natural lighting from the side, raw emotion captured. Environmental portrait connecting subject to nature.",
     
-    # Test 8: Environmental storytelling
-    "An abandoned astronaut helmet on the surface of Mars, half-buried in red dust. The helmet's visor reflects the pink Martian sky and distant Earth as a blue dot. Small rocks and footprints leading away into the distance. Cinematic composition, sense of isolation and mystery, photorealistic space photography aesthetic.",
+    # Test 17: Food photography with styling
+    "Rustic breakfast scene on wooden table by window. Fresh bread, fruits, coffee in ceramic cup, natural morning light casting soft shadows. Steam rising from hot beverage, appetizing composition with natural textures and warm tones.",
+    
+    # Test 18: Fantasy realism
+    "Ancient library with towering bookshelves reaching into darkness above. Floating books and glowing magical particles in the air. Single beam of light from high window illuminating dust motes. Mysterious and enchanting atmosphere, photorealistic rendering.",
 ]
 
 # Generation Parameters
-IMAGE_HEIGHT = 1024
-IMAGE_WIDTH = 1024
+IMAGE_HEIGHT = 512
+IMAGE_WIDTH = 512
 NUM_INFERENCE_STEPS = 9  # Results in 8 DiT forwards for Turbo model
 GUIDANCE_SCALE = 0.0  # Should be 0 for Turbo models
 SEED = None  # Set to None for random generation
@@ -143,17 +143,27 @@ def load_model(device: str, dtype: torch.dtype):
     print(f"Device: {device}")
     print(f"Dtype: {dtype}")
     print()
+    
+    # Clear GPU cache before loading model to prevent memory leaks
+    if device == "cuda":
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+        print("✓ GPU cache cleared before loading")
+    
     print("Downloading/loading model weights... (this may take a while on first run)")
     
     start_time = time.time()
     
-    # Load pipeline with efficient memory settings
+    # Load pipeline without dtype parameter (it's not supported and will be ignored)
+    # We'll convert to the right dtype after loading
     pipe = ZImagePipeline.from_pretrained(
         MODEL_ID,
-        dtype=dtype,
-        low_cpu_mem_usage=True,  # Changed to True for better memory efficiency
+        low_cpu_mem_usage=True,
     )
-    pipe.to(device)
+    
+    # Move to device and convert dtype manually
+    pipe = pipe.to(device, dtype=dtype)
+    print(f"✓ Model moved to {device} with dtype {dtype}")
     
     # Enable memory-efficient features
     if device == "cuda":
@@ -462,6 +472,13 @@ def main():
     
     # Detect device
     device, dtype = detect_device()
+    
+    # Clear any leftover GPU memory from previous runs
+    if device == "cuda":
+        torch.cuda.empty_cache()
+        torch.cuda.synchronize()
+        print("✓ GPU cache cleared from any previous runs")
+        print()
     
     # Load model
     pipe = load_model(device, dtype)
