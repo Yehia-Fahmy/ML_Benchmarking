@@ -1,0 +1,89 @@
+{
+  "timestamp": "2025-12-06T11:58:40.350737",
+  "total_models": 3,
+  "models": [
+    {
+      "name": "z-image-turbo",
+      "model_id": "Tongyi-MAI/Z-Image-Turbo",
+      "description": "6B parameter Turbo DiT model",
+      "config": {
+        "height": 512,
+        "width": 512,
+        "num_inference_steps": 9,
+        "guidance_scale": 0.0,
+        "seed": 19
+      },
+      "summary": {
+        "total_images": 3,
+        "successful_images": 3,
+        "failed_images": 0,
+        "total_time_seconds": 484.2586359977722,
+        "mean_time_seconds": 161.41954533259073,
+        "min_time_seconds": 156.715961933136,
+        "max_time_seconds": 169.67376852035522,
+        "mean_images_per_second": 0.006195036653954068,
+        "std_time_seconds": 5.855565447656995,
+        "peak_gpu_memory_mb": 20363.4501953125,
+        "mean_gpu_memory_mb": 20363.380208333332
+      }
+    },
+    {
+      "name": "sd-turbo",
+      "model_id": "stabilityai/sd-turbo",
+      "description": "Distilled SD 1.5 for speed",
+      "config": {
+        "height": 512,
+        "width": 512,
+        "num_inference_steps": 4,
+        "guidance_scale": 0.0,
+        "seed": 19
+      },
+      "summary": {
+        "total_images": 3,
+        "successful_images": 3,
+        "failed_images": 0,
+        "total_time_seconds": 1.1190073490142822,
+        "mean_time_seconds": 0.3730024496714274,
+        "min_time_seconds": 0.3266122341156006,
+        "max_time_seconds": 0.4600808620452881,
+        "mean_images_per_second": 2.680947540373759,
+        "std_time_seconds": 0.061617722994744696,
+        "peak_gpu_memory_mb": 3097.35986328125,
+        "mean_gpu_memory_mb": 3097.35986328125
+      }
+    },
+    {
+      "name": "sd-1.5",
+      "model_id": "runwayml/stable-diffusion-v1-5",
+      "description": "Classic SD 1.5 baseline",
+      "config": {
+        "height": 512,
+        "width": 512,
+        "num_inference_steps": 25,
+        "guidance_scale": 7.5,
+        "seed": 19
+      },
+      "summary": {
+        "total_images": 3,
+        "successful_images": 3,
+        "failed_images": 0,
+        "total_time_seconds": 7.453572750091553,
+        "mean_time_seconds": 2.4845242500305176,
+        "min_time_seconds": 2.4502344131469727,
+        "max_time_seconds": 2.5411908626556396,
+        "mean_images_per_second": 0.4024915433961721,
+        "std_time_seconds": 0.040363424006124644,
+        "peak_gpu_memory_mb": 3257.3544921875,
+        "mean_gpu_memory_mb": 3257.3544921875
+      }
+    }
+  ],
+  "fastest_model": {
+    "name": "sd-turbo",
+    "mean_time_seconds": 0.3730024496714274
+  },
+  "most_memory_efficient": {
+    "name": "sd-turbo",
+    "peak_gpu_memory_mb": 3097.35986328125
+  }
+}
