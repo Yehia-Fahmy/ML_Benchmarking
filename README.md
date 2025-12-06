@@ -21,10 +21,10 @@ A modular benchmarking suite comparing popular text-to-image models: [Z-Image-Tu
 - 20GB disk space for model weights
 
 ### VRAM Guidance for 512x512 Images
-- **Z-Image-Turbo**: ~6-8 GB peak (6B parameter model)
-- **SD-Turbo**: ~4-6 GB peak
-- **Stable Diffusion 1.5**: ~4-6 GB peak
-- **STARFlow**: ~6 GB peak (256x256 only)
+- **Z-Image-Turbo**: ~20 GB (6B parameter model - uses CPU offloading on 8GB GPUs)
+- **SD-Turbo**: ~3.1 GB peak
+- **Stable Diffusion 1.5**: ~3.3 GB peak
+- **STARFlow**: ~12 GB+ (256x256 only - requires high VRAM)
 
 ## Installation
 
@@ -58,7 +58,7 @@ A modular benchmarking suite comparing popular text-to-image models: [Z-Image-Tu
 python run_all.py
 ```
 
-This will benchmark all models with default settings (5 prompts, seed 42, 512x512).
+This will benchmark all models with default settings (3 prompts, seed 19, 512x512).
 
 ### Run Specific Models
 
@@ -105,7 +105,7 @@ All scripts support these common arguments:
 | Argument | Description | Default |
 |----------|-------------|---------|
 | `--prompts` | Custom prompts (space-separated) | Built-in test prompts |
-| `--seed` | Random seed for reproducibility | 42 |
+| `--seed` | Random seed for reproducibility | 19 |
 | `--height` | Image height | 512 |
 | `--width` | Image width | 512 |
 | `--output_dir` | Output directory | `comparison_results` |
@@ -224,11 +224,54 @@ STARFlow requires additional setup:
 
 ## Default Test Prompts
 
-1. Futuristic cityscape in heavy rain at night with neon reflections
-2. Ancient forest with bioluminescent plants and drifting fog
-3. Underwater research base with divers and service robots
-4. Abstract geometric sculpture made of glass, smoke, and colored light
-5. Snowy mountain village at dawn beneath an aurora
+1. A weathered elderly fisherman mending nets on a wooden dock at golden hour, deep wrinkles on his face, wearing a faded blue sweater, seagulls flying overhead, photorealistic
+2. A young ballet dancer mid-leap in an abandoned cathedral with shattered stained glass windows, dramatic side lighting casting long shadows, dust particles floating in light beams
+3. A random image
+
+## Benchmark Results
+
+**Last Run:** 2025-12-06 | **Seed:** 19 | **Resolution:** 512x512
+
+### Performance Comparison
+
+| Model | Steps | CFG | Mean Time | Throughput | Peak GPU Memory |
+|-------|-------|-----|-----------|------------|-----------------|
+| **Z-Image-Turbo** | 9 | 0.0 | 161.42s ± 5.86s | 0.006 img/s | 20.36 GB* |
+| **SD-Turbo** | 4 | 0.0 | 0.37s ± 0.06s | 2.68 img/s | 3.10 GB |
+| **SD 1.5** | 25 | 7.5 | 2.48s ± 0.04s | 0.40 img/s | 3.26 GB |
+
+*Z-Image-Turbo (6B params) exceeds 8GB VRAM and uses CPU offloading, resulting in slower performance.
+
+### Analysis
+
+- **Fastest Model:** SD-Turbo (0.37s avg per image)
+- **Most Memory Efficient:** SD-Turbo (3.10 GB peak)
+- **Highest Quality (6B params):** Z-Image-Turbo (but requires 12GB+ VRAM for optimal speed)
+
+## Visual Comparison
+
+Side-by-side comparison of all three models using the same prompts and seed.
+
+### Prompt 1: Elderly Fisherman
+> A weathered elderly fisherman mending nets on a wooden dock at golden hour, deep wrinkles on his face, wearing a faded blue sweater, seagulls flying overhead, photorealistic
+
+| Z-Image-Turbo | SD-Turbo | SD 1.5 |
+|---------------|----------|--------|
+| ![Z-Image-Turbo](comparison_results/z-image-turbo/baseline/prompt_01_seed_19.png) | ![SD-Turbo](comparison_results/sd-turbo/baseline/prompt_01_seed_19.png) | ![SD 1.5](comparison_results/sd-1.5/baseline/prompt_01_seed_19.png) |
+
+### Prompt 2: Ballet Dancer
+> A young ballet dancer mid-leap in an abandoned cathedral with shattered stained glass windows, dramatic side lighting casting long shadows, dust particles floating in light beams
+
+| Z-Image-Turbo | SD-Turbo | SD 1.5 |
+|---------------|----------|--------|
+| ![Z-Image-Turbo](comparison_results/z-image-turbo/baseline/prompt_02_seed_19.png) | ![SD-Turbo](comparison_results/sd-turbo/baseline/prompt_02_seed_19.png) | ![SD 1.5](comparison_results/sd-1.5/baseline/prompt_02_seed_19.png) |
+
+### Prompt 3: Random Image
+> A random image
+
+| Z-Image-Turbo | SD-Turbo | SD 1.5 |
+|---------------|----------|--------|
+| ![Z-Image-Turbo](comparison_results/z-image-turbo/baseline/prompt_03_seed_19.png) | ![SD-Turbo](comparison_results/sd-turbo/baseline/prompt_03_seed_19.png) | ![SD 1.5](comparison_results/sd-1.5/baseline/prompt_03_seed_19.png) |
 
 ## License
 
